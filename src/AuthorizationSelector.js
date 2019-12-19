@@ -11,14 +11,25 @@ const selectable = '[type]';
  * A function that maps a value of the `type` attribute of an authorization method
  * to a label to be presented in the drodown.
  *
- * @param {String} type The type of the authorization method. Case doesn't matter.
+ * The `attrForLabel` has higher priority of defining a custom name for the method.
+ *
+ * @param {Node} node A node to read type from.
+ * @param {String=} attrForLabel In case when the type is not recognized it uses
+ * this attribute to look for the label.
  * @return {String} Lable for the type.
  */
-export const typeToName = (type) => {
-  if (!type) {
-    return type;
+export const nodeToLabel = (node, attrForLabel) => {
+  if (!node) {
+    return '';
   }
-  type = type.toLowerCase();
+  if (attrForLabel && node.hasAttribute(attrForLabel)) {
+    return node.getAttribute(attrForLabel);
+  }
+  let type = node.type;
+  if (!type && node.hasAttribute('type')) {
+    type = node.getAttribute('type');
+  }
+  type = String(type).toLowerCase();
   switch (type) {
     case 'none': return 'None';
     case 'basic': return 'Basic';
@@ -27,8 +38,8 @@ export const typeToName = (type) => {
     case 'oauth 1': return 'OAuth 1';
     case 'oauth 2': return 'OAuth 2';
     case 'client certificate': return 'Client certificate';
-    default: return type;
   }
+  return type;
 };
 
 export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
@@ -99,6 +110,13 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
        * Enables compatibility with Anypoint components.
        */
       compatibility: { type: Boolean, reflect: true },
+      /**
+       * An attrribute to use to read value for the lable to be rendered in the
+       * drop down when `type` property cannot be translated to a common name.
+       *
+       * This attribute should be set on the child element.
+       */
+      attrForLabel: { type: String },
       /**
        * A value to set on a dropdown's select attribute.
        *
@@ -295,9 +313,10 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
       return;
     }
     const value = dropdown.value;
+    const { attrForLabel } = this;
     for (let i = 0, len = nodesList.length; i < len; i++) {
       const type = nodesList[i].type;
-      if (type && typeToName(type) === value) {
+      if (type && nodeToLabel(nodesList[i], attrForLabel) === value) {
         this.selected = undefined;
         dropdown._selectedItem = undefined;
         this._dropdownSelected = undefined;
@@ -381,12 +400,13 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
   }
 
   _dropdownItemTemplate(item) {
-    const { compatibility, outlined } = this;
-    let { type } = item;
-    if (!type && item.hasAttribute('type')) {
-      type = item.getAttribute('type');
-    }
-    const label = typeToName(type);
+    const {
+      compatibility,
+      outlined,
+      attrForLabel,
+    } = this;
+
+    const label = nodeToLabel(item, attrForLabel)
     return html`<anypoint-item
       data-label="${label}"
       ?compatibility="${compatibility}"

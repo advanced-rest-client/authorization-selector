@@ -1,8 +1,8 @@
 # authorization-selector
 
-A web component that renders single authorization method from a list of passed as children methods. In a way it behaves like `<select>` HTML element that accepts `<option>` elements as children and render drop down to select single option.
+A web component that renders single authorization method from a list of passed as children methods. In a way it behaves like `<select>` element that accepts `<option>` elements as children and render drop down to select single option.
 
-The element is designed to work with `@advanced-rest-client/authorization-method` element. You can create own element by extending `@advanced-rest-client/authorization-method/src/AuthorizationBase.js` class. However, the component renders any child and adds support to children with `type` attribute.
+The element is designed to work with `@advanced-rest-client/authorization-method` element. You can create own element by extending `@advanced-rest-client/authorization-method/src/AuthorizationBase.js` class. However, the component renders any child and has `type` attribute.
 
 ## Usage
 
@@ -29,6 +29,15 @@ npm install --save @advanced-rest-client/authorization-selector
       <authorization-method type="x-custom"></authorization-method>
       <authorization-method type="api key"></authorization-method>
     </authorization-selector>
+    <script>
+    {
+      const selector = document.querySelector('authorization-selector');
+      selector.onchange = (e) => {
+        const { target } = e;
+        console.log(`Current settings for ${target.type} method is`, target.serialize());
+      };
+    }
+    </script>
   </body>
 </html>
 ```
@@ -68,25 +77,6 @@ The `@advanced-rest-client/authorization-selector` panel cooperates with `@advan
 
 To pass the authorization configuration data from a store to the corresponding authorization method you have to pass the values via properties or attributes on the `authorization-method` element.
 See the demo page for one of possible solutions of how to do this.
-
-## The "none" authorization method
-
-Sometimes users may want to choose not to provide any authorization values. With default configuration
-once the user select a method there's no way to reset it "none".
-To allow the user to make a "none" selection you can simply add a node that has `type="none"` attribute set.
-
-```html
-<authorization-selector selected="0">
-  <div type="none">Authorization configuration is disabled</div>
-  <authorization-method type="basic"></authorization-method>
-</authorization-selector>
-</body>
-```
-
-The result of calling `serialize()` function is always `null` when `none` is selected. You can change this behavior by adding the `serialize()` function to the node.
-
-Be aware that by manipulating the children at runtime the drop down selector may be
-out of sync with the selected panel if the children before current selection has changed. In this case you should set `selected` to `undefined` to reset the selection.
 
 ### Example
 
@@ -150,6 +140,51 @@ class SampleElement extends LitElement {
 }
 ```
 
+## The "none" authorization method
+
+Sometimes users may want to choose not to provide any authorization values. With default configuration
+once the user select a method there's no way to reset it "none".
+To allow the user to make a "none" selection you can simply add a node that has `type="none"` attribute set.
+
+```html
+<authorization-selector selected="0">
+  <div type="none">Authorization configuration is disabled</div>
+  <authorization-method type="basic"></authorization-method>
+</authorization-selector>
+</body>
+```
+
+The result of calling `serialize()` function is always `null` when `none` is selected. You can change this behavior by adding the `serialize()` function to the node.
+
+Be aware that by manipulating the children at runtime the drop down selector may be
+out of sync with the selected panel if the children before current selection has changed. In this case you should set `selected` to `undefined` to reset the selection.
+
+## Creating custom authorization methods
+
+The easiest way is to create a custom element that extends `@advanced-rest-client/authorization-method/src/AuthorizationBase.js`. You can override any of methods defined there. Most likely you would defined `validate()` and possibly `serialize()` functions.
+
+You can also create completely different based on other class. You can see an example of such in [demo/custom-method.js](demo/custom-method.js) file.
+
+Things to remember:
+
+-   when inserting a method to the DOM always set `type`. It is an identifier used by you to know which authorization data you are dealing with. Also, if it's not defined then this component will ignore it.
+-   Optionally provide an attribute with a value that is rendered in the drop down selector. Set `attrforlabel` on this element to inform it where to look for the label.
+-   The `serialize()` function is just a helper for you to get the configuration values in single function call. It is not used by this element.
+-   The `validate()` function has no effect on this element or the UI unless you perform some action after validating the state.
+-   The most efficient way of dealing with setting and getting properties is to directly work with the properties / attributes of the authorization method and then to listen for `change` event to serialize configuration or to perform validation.
+
+Example
+
+```html
+<authorization-selector attrforlabel="label">
+  <custom-auth-method1 type="custom1" label="Custom method #1"></custom-auth-method1>
+  <custom-auth-method2 type="custom2" label="Custom method #2"></custom-auth-method2>
+  <authorization-method type="basic" label="Custom Basic"></authorization-method>
+</authorization-selector>
+```
+
+You can also use `attrforlabel` to override default label generated for the common authorization methods.
+It takes the attribute value before it processes the `type` attribute.
 
 ## Development
 

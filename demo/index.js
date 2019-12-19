@@ -6,6 +6,7 @@ import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 import '@anypoint-web-components/anypoint-button/anypoint-button.js';
 import '@anypoint-web-components/anypoint-checkbox/anypoint-checkbox.js'
 import '../authorization-selector.js';
+import './custom-method.js';
 
 const STORE_KEY = 'auth-selector-config';
 
@@ -36,6 +37,7 @@ class DemoPage extends ArcDemoPage {
     this._demoStateHandler = this._demoStateHandler.bind(this);
     this._toggleMainOption = this._toggleMainOption.bind(this);
     this._mainChangeHandler = this._mainChangeHandler.bind(this);
+    this._customChangeHandler = this._customChangeHandler.bind(this);
 
     this._restoreConfig();
   }
@@ -71,7 +73,6 @@ class DemoPage extends ArcDemoPage {
     this.changeCounter++;
     const { selected, type } = e.target;
     const config = e.target.serialize();
-    const valid = e.target.validate();
 
     this.authConfiguration = {
       selected,
@@ -82,6 +83,17 @@ class DemoPage extends ArcDemoPage {
     const storeValue = JSON.stringify(this.authConfiguration);
     localStorage[STORE_KEY] = storeValue;
 
+    this._printEventChangeValues(e);
+  }
+
+  _customChangeHandler(e) {
+    this._printEventChangeValues(e);
+  }
+
+  _printEventChangeValues(e) {
+    const { selected, type } = e.target;
+    const config = e.target.serialize();
+    const valid = e.target.validate();
     console.log('selected:', selected, 'type:', type, 'valid:', valid);
     console.log(config);
   }
@@ -363,6 +375,47 @@ class DemoPage extends ArcDemoPage {
     `;
   }
 
+  _customMeythodsTemplate() {
+    const {
+      demoStates,
+      darkThemeActive,
+      compatibility,
+      outlined,
+      demoState,
+    } = this;
+    return html`
+      <h3>Custom authorization methods</h3>
+      <p>
+        Simply add any HTML element with "type" attribute. Optionally add the "attrforlabel"
+        to tell which attribute has a value for the drop down selector.
+      </p>
+      <arc-interactive-demo
+        .states="${demoStates}"
+        .selectedState="${demoState}"
+        @state-chanegd="${this._demoStateHandler}"
+        ?dark="${darkThemeActive}"
+      >
+
+        <authorization-selector
+          ?compatibility="${compatibility}"
+          ?outlined="${outlined}"
+          slot="content"
+          attrforlabel="label"
+          @change="${this._customChangeHandler}"
+        >
+          ${this._ntlmTemplate()}
+          <custom-auth-method-demo type="custom1" label="Custom demo"></custom-auth-method-demo>
+          <authorization-method
+            ?compatibility="${compatibility}"
+            ?outlined="${outlined}"
+            type="basic"
+            label="Custom Basic"
+          ></authorization-method>
+        </authorization-selector>
+      </arc-interactive-demo>
+    `;
+  }
+
   _introductionTemplate() {
     return html `
       <section class="documentation-section">
@@ -392,6 +445,7 @@ class DemoPage extends ArcDemoPage {
 
         ${this._singleItemTemplate()}
         ${this._attrForSelectedTemplate()}
+        ${this._customMeythodsTemplate()}
       </section>`;
   }
 
