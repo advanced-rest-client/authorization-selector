@@ -90,6 +90,10 @@ class SampleElement extends LitElement {
 
   render() {
     const { authConfiguration } = this;
+    // assuming that the number of methods can't change.
+    // Otherwise you should figure out the selection method.
+    // Consider use of `attrForSelected` and use type to manage selection.
+    const { selected } = authConfiguration;
     return html`<authorization-selector
       .selected="${selected}"
       @change="${this._authChangeHandler}"
@@ -106,6 +110,8 @@ class SampleElement extends LitElement {
     const { selected, type } = e.target;
     const config = e.target.serialize();
 
+    // This should always be set as restored configuration that is out of sync
+    // with updated values can override user input.
     this.authConfiguration = {
       selected,
       config,
@@ -142,32 +148,35 @@ class SampleElement extends LitElement {
 
 ## The "none" authorization method
 
-Sometimes users may want to choose not to provide any authorization values. With default configuration
-once the user select a method there's no way to reset it "none".
-To allow the user to make a "none" selection you can simply add a node that has `type="none"` attribute set.
+Sometimes users may want to choose not to provide any authorization values. With default configuration once the user select a method there's no way to reset it to "none".
+To allow the user to make a "none" selection you can simply add an element that has `type="none"` attribute.
 
 ```html
+<style>
+  [type="none"] {
+    /* margin of the drop down selector */
+    padding: 8px;
+  }
+</style>
 <authorization-selector selected="0">
   <div type="none">Authorization configuration is disabled</div>
   <authorization-method type="basic"></authorization-method>
 </authorization-selector>
-</body>
 ```
 
 The result of calling `serialize()` function is always `null` when `none` is selected. You can change this behavior by adding the `serialize()` function to the node.
 
-Be aware that by manipulating the children at runtime the drop down selector may be
-out of sync with the selected panel if the children before current selection has changed. In this case you should set `selected` to `undefined` to reset the selection.
+Be aware that by manipulating the children at runtime the drop down selector may be out of sync with the selected panel if the children before current selection has changed. In this case you should set `selected` to `undefined` to reset the selection.
 
 ## Creating custom authorization methods
 
-The easiest way is to create a custom element that extends `@advanced-rest-client/authorization-method/src/AuthorizationBase.js`. You can override any of methods defined there. Most likely you would defined `validate()` and possibly `serialize()` functions.
+The easiest way is to create a custom element that extends `@advanced-rest-client/authorization-method/src/AuthorizationBase.js`. You can override any of methods defined there. Most likely you would define the `validate()` and possibly `serialize()` functions.
 
-You can also create completely different based on other class. You can see an example of such in [demo/custom-method.js](demo/custom-method.js) file.
+You can also create completely different element that is based on other base class. You can check an example of such in [demo/custom-method.js](demo/custom-method.js) file.
 
 Things to remember:
 
--   when inserting a method to the DOM always set `type`. It is an identifier used by you to know which authorization data you are dealing with. Also, if it's not defined then this component will ignore it.
+-   when inserting a method to the DOM always set `type`. It is an identifier used by **you** to know which authorization data you are dealing with. Also, if it's not defined then this component will ignore it.
 -   Optionally provide an attribute with a value that is rendered in the drop down selector. Set `attrforlabel` on this element to inform it where to look for the label.
 -   The `serialize()` function is just a helper for you to get the configuration values in single function call. It is not used by this element.
 -   The `validate()` function has no effect on this element or the UI unless you perform some action after validating the state.
