@@ -54,11 +54,12 @@
   },
   "devDependencies": {
     "@advanced-rest-client/arc-demo-helper": "^1.0.16",
-    "@advanced-rest-client/authorization-method": "^0.1.4",
+    "@advanced-rest-client/authorization-method": "^0.1.5",
     "@advanced-rest-client/eslint-config": "^1.1.4",
     "@advanced-rest-client/oauth-authorization": "^3.0.1",
     "@advanced-rest-client/prettier-config": "^0.1.0",
     "@advanced-rest-client/testing-karma-sl": "^1.1.0",
+    "@anypoint-web-components/anypoint-checkbox": "^1.0.2",
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "@open-wc/testing": "^2.0.0",

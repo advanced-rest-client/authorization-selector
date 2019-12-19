@@ -69,6 +69,25 @@ The `@advanced-rest-client/authorization-selector` panel cooperates with `@advan
 To pass the authorization configuration data from a store to the corresponding authorization method you have to pass the values via properties or attributes on the `authorization-method` element.
 See the demo page for one of possible solutions of how to do this.
 
+## The "none" authorization method
+
+Sometimes users may want to choose not to provide any authorization values. With default configuration
+once the user select a method there's no way to reset it "none".
+To allow the user to make a "none" selection you can simply add a node that has `type="none"` attribute set.
+
+```html
+<authorization-selector selected="0">
+  <div type="none">Authorization configuration is disabled</div>
+  <authorization-method type="basic"></authorization-method>
+</authorization-selector>
+</body>
+```
+
+The result of calling `serialize()` function is always `null` when `none` is selected. You can change this behavior by adding the `serialize()` function to the node.
+
+Be aware that by manipulating the children at runtime the drop down selector may be
+out of sync with the selected panel if the children before current selection has changed. In this case you should set `selected` to `undefined` to reset the selection.
+
 ### Example
 
 ```javascript

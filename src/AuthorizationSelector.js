@@ -17,13 +17,14 @@ export const typeToName = (type) => {
   }
   type = type.toLowerCase();
   switch (type) {
+    case 'none': return 'None';
     case 'basic': return 'Basic';
     case 'ntlm': return 'NTML';
     case 'digest': return 'Digest';
     case 'oauth 1': return 'OAuth 1';
     case 'oauth 2': return 'OAuth 2';
     case 'client certificate': return 'Client certificate';
-    default: type;
+    default: return type;
   }
 };
 
@@ -65,7 +66,16 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    */
   get type() {
     const { selectedItem } = this;
-    return selectedItem ? selectedItem.type : null;
+    if (!selectedItem) {
+      return null;
+    }
+    if (selectedItem.type) {
+      return selectedItem.type;
+    }
+    if (selectedItem.hasAttribute('type')) {
+      return selectedItem.getAttribute('type');
+    }
+    return null;
   }
 
   static get properties() {
@@ -362,7 +372,11 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
 
   _dropdownItemTemplate(item) {
     const { compatibility, outlined } = this;
-    const label = typeToName(item.type);
+    let { type } = item;
+    if (!type && item.hasAttribute('type')) {
+      type = item.getAttribute('type');
+    }
+    const label = typeToName(type);
     return html`<anypoint-item
       data-label="${label}"
       ?compatibility="${compatibility}"

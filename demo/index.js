@@ -4,6 +4,7 @@ import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
 import '@advanced-rest-client/authorization-method/authorization-method.js';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 import '@anypoint-web-components/anypoint-button/anypoint-button.js';
+import '@anypoint-web-components/anypoint-checkbox/anypoint-checkbox.js'
 import '../authorization-selector.js';
 
 const STORE_KEY = 'auth-selector-config';
@@ -16,6 +17,7 @@ class DemoPage extends ArcDemoPage {
       'compatibility',
       'outlined',
       'changeCounter',
+      'allowNone',
     ]);
     this._componentName = 'authorization-selector';
     this.demoStates = ['Filled', 'Outlined', 'Anypoint'];
@@ -254,6 +256,7 @@ class DemoPage extends ArcDemoPage {
       demoState,
       changeCounter,
       authConfiguration,
+      allowNone,
     } = this;
     const selected = authConfiguration ? authConfiguration.selected : undefined;
     return html`
@@ -269,7 +272,6 @@ class DemoPage extends ArcDemoPage {
           @state-chanegd="${this._demoStateHandler}"
           ?dark="${darkThemeActive}"
         >
-
           <authorization-selector
             ?compatibility="${compatibility}"
             ?outlined="${outlined}"
@@ -277,12 +279,22 @@ class DemoPage extends ArcDemoPage {
             @change="${this._mainChangeHandler}"
             .selected="${selected}"
           >
+            ${allowNone ? html`<div type="none">Authorization configuration is disabled</div>` : ''}
             ${this._basicTemplate(authConfiguration)}
             ${this._ntlmTemplate(authConfiguration)}
             ${this._digestTemplate(authConfiguration)}
             ${this._oa1Template(authConfiguration)}
             ${this._oa2Template(authConfiguration)}
           </authorization-selector>
+
+          <label slot="options" id="mainOptionsLabel">Options</label>
+          <anypoint-checkbox
+            aria-describedby="mainOptionsLabel"
+            slot="options"
+            name="allowNone"
+            @change="${this._toggleMainOption}"
+            >Alow "None"</anypoint-checkbox
+          >
         </arc-interactive-demo>
         <p>Change event dispatched ${changeCounter} time(s)</p>
       </section>
