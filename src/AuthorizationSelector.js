@@ -4,6 +4,9 @@ import '@anypoint-web-components/anypoint-dropdown-menu/anypoint-dropdown-menu.j
 import '@anypoint-web-components/anypoint-listbox/anypoint-listbox.js';
 import '@anypoint-web-components/anypoint-item/anypoint-item.js';
 import styles from './Styles.js';
+
+const selectable = '[type]';
+
 /**
  * A function that maps a value of the `type` attribute of an authorization method
  * to a label to be presented in the drodown.
@@ -78,6 +81,14 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     return null;
   }
 
+  get selectable() {
+    return selectable;
+  }
+
+  set selectable(value) {
+    throw new Error(`Cannot set ${value} on selectable attribute. It is read only.`);
+  }
+
   static get properties() {
     return {
       /**
@@ -101,7 +112,6 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
 
   constructor() {
     super();
-    this.selectable = '[type]';
     this._itemsHandler = this._itemsHandler.bind(this);
     this._selectionHandler = this._selectionHandler.bind(this);
     this._methodChange = this._methodChange.bind(this);
