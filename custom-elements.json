@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "tags": [
+    {
+      "name": "authorization-selector",
+      "description": "An element to render an UI for client certificate authorization method",
+      "properties": [
+        {
+          "name": "selected",
+          "type": "Booelan"
+        },
+        {
+          "name": "type",
+          "type": "String",
+          "default": "client certificate",
+          "readOnly": true
+        },
+        {
+          "name": "hasItems",
+          "type": "Booelan",
+          "readOnly": true
+        }
+      ],
+      "events": [],
+      "slots": [],
+      "cssProperties": []
+    }
+  ]
+}
