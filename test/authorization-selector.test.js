@@ -140,7 +140,7 @@ describe('authorization-selector', function() {
     it('adds new method dynamically to existing methods', async () => {
       const element = await methodsFixture();
       const node = document.createElement('authorization-method');
-      node.type = 'oauth 1';
+      node.setAttribute('type', 'oauth 1');
       element.appendChild(node);
       await nextFrame();
       assert.lengthOf(element.items, 3, 'new child is detected');
