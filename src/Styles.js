@@ -1,6 +1,10 @@
 import { css } from 'lit-element';
 export default css`
-host {
+:host {
   display: block;
+}
+
+::slotted([hidden]) {
+  display: none !important;
 }
 `;

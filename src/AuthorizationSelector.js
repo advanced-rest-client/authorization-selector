@@ -33,7 +33,7 @@ export const nodeToLabel = (node, attrForLabel) => {
   switch (type) {
     case 'none': return 'None';
     case 'basic': return 'Basic';
-    case 'ntlm': return 'NTML';
+    case 'ntlm': return 'NTLM';
     case 'digest': return 'Digest';
     case 'oauth 1': return 'OAuth 1';
     case 'oauth 2': return 'OAuth 2';
@@ -86,10 +86,9 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     if (selectedItem.type) {
       return selectedItem.type;
     }
-    if (selectedItem.hasAttribute('type')) {
-      return selectedItem.getAttribute('type');
-    }
-    return null;
+    // because [type] is the only selectable childrent this has to have
+    // `type` attribute
+    return selectedItem.getAttribute('type');
   }
 
   get selectable() {
@@ -153,7 +152,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
 
   firstUpdated() {
     const { items } = this;
-    if (items) {
+    if (items && items.length) {
       this._addItemsListeners(items);
       this._itemsHandler();
     }
@@ -187,7 +186,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    */
   authorize() {
     const { selectedItem } = this;
-    return selectedItem && selectedItem.authorize ? selectedItem.authorize() : true;
+    return selectedItem && selectedItem.authorize ? selectedItem.authorize() : null;
   }
   /**
    * Calls `serialize()` function on currenty selected authorization method.
@@ -234,7 +233,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    */
   _selectedDropdownHandler(e) {
     this.selected = this._indexToValue(e.detail.value);
-    this._notifyChnage();
+    this._notifyChange();
   }
   /**
    * Handler for the `activate` event dispatched by the dropdown.
@@ -352,16 +351,19 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    * the event to be dispatched from this element.
    */
   _methodChange() {
-    this._notifyChnage();
+    this._notifyChange();
   }
 
-  _notifyChnage() {
+  /**
+   * Dispatches non-bubbling `change` event.
+   */
+  _notifyChange() {
     this.dispatchEvent(new CustomEvent('change'));
   }
 
   render() {
     return html`
-    <style>${this.style}</style>
+    <style>${this.styles}</style>
     ${this._methodSelectorTemplate()}
     <slot></slot>
     `;
