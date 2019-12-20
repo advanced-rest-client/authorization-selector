@@ -5,47 +5,159 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   src/CcAuthorizationMethod.js
+ *   src/AuthorizationSelector.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-import {html} from 'lit-element';
+import {html, LitElement} from 'lit-element';
 
-import {AuthorizationMethod} from '@advanced-rest-client/authorization-method/src/AuthorizationMethod.js';
+import {AnypointSelectableMixin} from '@anypoint-web-components/anypoint-selector/anypoint-selectable-mixin.js';
 
-import {notifyChange} from '@advanced-rest-client/authorization-method/src/Utils.js';
+export {nodeToLabel};
 
-export {CcAuthorizationMethod};
 
-declare class CcAuthorizationMethod {
+/**
+ * A function that maps a value of the `type` attribute of an authorization method
+ * to a label to be presented in the drodown.
+ *
+ * The `attrForLabel` has higher priority of defining a custom name for the method.
+ *
+ * @returns Lable for the type.
+ */
+declare function nodeToLabel(node: Node|null, attrForLabel?: String|null): String|null;
+
+export {AuthorizationSelector};
+
+declare class AuthorizationSelector {
   readonly styles: any;
-  type: any;
-  readonly hasItems: Boolean|null;
+  readonly _dropdown: any;
+  onchange: any|null;
+  readonly type: String|null;
+  selectable: any;
+  constructor();
+  connectedCallback(): void;
+  disconnectedCallback(): void;
+  firstUpdated(): void;
 
   /**
-   * Validates the form.
+   * Calls `serialize()` function on currenty selected authorization method.
    *
-   * @returns Validation result. Always true.
-   */
-  validate(): Boolean|null;
-
-  /**
-   * Creates a settings object with user provided data for current method.
-   *
-   * @returns User provided data
+   * @returns Result of calling `serialize()` function on selected
+   * method or `null` if no selection or selected method does not implement this
+   * function.
    */
   serialize(): object|null;
 
   /**
-   * Restores previously serialized settings.
-   * A method type must be selected before calling this function.
+   * Calls `validate()` function on currenty selected authorization method.
    *
-   * @param settings Previousy serialized values.
+   * @returns Result of calling `validate()` function on selected
+   * method or `null` if no selection or selected method does not implement this
+   * function.
    */
-  restore(settings?: object|null): void;
-  (created: any): any;
+  validate(): Boolean|null;
+
+  /**
+   * Calls `authorize()` function on currenty selected authorization method.
+   *
+   * @returns Result of calling `authorize()` function on selected
+   * method or `null` if no selection or selected method does not implement this
+   * function.
+   */
+  authorize(): any|null;
+
+  /**
+   * Calls `serialize()` function on currenty selected authorization method.
+   *
+   * Note, this function quits quietly when there's no selection or when selected
+   * method does not implement the `restore()` function
+   */
+  restore(values: object|null): void;
+
+  /**
+   * A handler for `items-changed` event dispatched by the selectable mixin.
+   * It manages selection state when items changed.
+   */
+  _itemsHandler(): void;
+
+  /**
+   * Handler for `selected-changed` event dispatched by the selectable mixin.
+   *
+   * Updates selection state and sets/removed `hidden` attribute on the children.
+   */
+  _selectionHandler(): void;
+
+  /**
+   * A handler for the `selected-changed` event dispatched on the dropdown
+   * element.
+   * It maps selected index on the dropdown to currently `selected` value.
+   * Note, when `attrForSelected` is used then it won't be the index of selected
+   * item.
+   */
+  _selectedDropdownHandler(e: CustomEvent|null): void;
+
+  /**
+   * Handler for the `activate` event dispatched by the dropdown.
+   * It ensures that the dropdown is closed when clicked on already selected item.
+   */
+  _activateDropdownHandler(e: CustomEvent|null): void;
+
+  /**
+   * Updates children to add or remove the `hidden` attribute depending on current selection.
+   */
+  _updateSelectionState(): void;
+
+  /**
+   * Ensures that authorization method is selected if only one item is
+   * recognized.
+   */
+  _ensureSingleSelection(): void;
+
+  /**
+   * Overrides `_mutationHandler()` from the selectable mixin to add/remove
+   * `change` event on authorization methods being added / removed.
+   */
+  _mutationHandler(mutationsList: Array<MutationRecord|null>|null): void;
+
+  /**
+   * Tests whether a node in a list of removed nodes represents currently selected
+   * authorization method. If so then it removes current selection.
+   * This is to ensure the label in the dropdown isthis.dispatchEvent( updated when current selection change.
+   *
+   * @param nodesList A list of removed nodes.
+   */
+  _testRemovedSelected(nodesList: NodeList|null): void;
+
+  /**
+   * Removes `change` observer from passed nodes.
+   *
+   * @param nodes List of nodes to remove event listener from.
+   */
+  _removeItemsListeners(nodes: Array<Node|null>|NodeList|null): void;
+
+  /**
+   * Adds `change` observer to passed nodes.
+   * It is safe to call it more than once on the same nodes list as it removes
+   * the event listener if it previously was registered.
+   *
+   * @param nodes List of nodes to add event listener to.
+   */
+  _addItemsListeners(nodes: Array<Node|null>|NodeList|null): void;
+
+  /**
+   * Handler for authorization method `change` event that retargets
+   * the event to be dispatched from this element.
+   */
+  _methodChange(): void;
+
+  /**
+   * Dispatches non-bubbling `change` event.
+   */
+  _notifyChange(): void;
   render(): any;
+  _methodSelectorTemplate(): any;
+  _dropdownItemTemplate(item: any): any;
 }

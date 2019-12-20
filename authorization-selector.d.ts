@@ -11,6 +11,6 @@
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 
-import {CcAuthorizationMethod} from './src/CcAuthorizationMethod.js';
+import {AuthorizationSelector} from './src/AuthorizationSelector.js';
 
-export {CcAuthorizationMethod};
+export {AuthorizationSelector};
