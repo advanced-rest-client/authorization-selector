@@ -3,26 +3,60 @@
   "tags": [
     {
       "name": "authorization-selector",
-      "description": "An element to render an UI for client certificate authorization method",
+      "description": "An element to render single authorization method from a list of defined methods",
       "properties": [
         {
-          "name": "selected",
-          "type": "Booelan"
+          "name": "onchange",
+          "type": "Function",
+          "description": "A function to be called when change event is dispatched"
+        },
+        {
+          "name": "_dropdown",
+          "type": "Element",
+          "readOnly": true
+        },
+        {
+          "name": "selectable",
+          "type": "String",
+          "readOnly": true
         },
         {
           "name": "type",
           "type": "String",
-          "default": "client certificate",
-          "readOnly": true
+          "description": "A type attribute value of selected authorization method."
         },
         {
-          "name": "hasItems",
-          "type": "Booelan",
-          "readOnly": true
+          "name": "outlined",
+          "type": "Boolean",
+          "description": "Enables outlined theme."
+        },
+        {
+          "name": "compatibility",
+          "type": "Boolean",
+          "description": "Enables compatibility with Anypoint components."
+        },
+        {
+          "name": "attrForLabel",
+          "type": "String",
+          "description": "An attrribute to use to read value for the lable to be rendered in the drop down when `type` property cannot be translated to a common name.\n\nThis attribute should be set on the child element."
+        },
+        {
+          "name": "_dropdownSelected",
+          "type": "Number"
         }
       ],
-      "events": [],
-      "slots": [],
+      "events": [
+        {
+          "name": "change",
+          "description": "Dispatched when method selection change or a method element dispatches change event (retargeting)"
+        }
+      ],
+      "slots": [
+        {
+          "name": "",
+          "description": "Renders the authorization methods that has `type` property. Everything else ios rendered as is."
+        }
+      ],
       "cssProperties": []
     }
   ]
