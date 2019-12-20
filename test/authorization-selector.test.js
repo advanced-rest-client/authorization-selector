@@ -134,6 +134,16 @@ describe('authorization-selector', function() {
       element.selected = 'ntlm';
       assert.isFalse(element.querySelector('[type=ntlm]').hasAttribute('hidden'));
     });
+
+    it('renders selected while initialization method', async () => {
+      const element = await attrForSelectedFixture('basic');
+      assert.isFalse(element.querySelector('[type=basic]').hasAttribute('hidden'));
+    });
+
+    it('sets dropdown selection index', async () => {
+      const element = await attrForSelectedFixture('ntlm');
+      assert.equal(element._dropdownSelected, 1);
+    });
   });
 
   describe('Dynamic children', () => {

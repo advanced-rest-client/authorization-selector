@@ -156,7 +156,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
       this._addItemsListeners(items);
       this._itemsHandler();
     }
-    this._dropdownSelected = this.selected;
+    this._dropdownSelected = this._valueToIndex(this.selected);
   }
   /**
    * Calls `serialize()` function on currenty selected authorization method.
