@@ -96,7 +96,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
   }
 
   set selectable(value) {
-    throw new Error(`Cannot set ${value} on selectable attribute. It is read only.`);
+    // simpoly ignore it.
   }
 
   static get properties() {

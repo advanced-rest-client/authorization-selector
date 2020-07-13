@@ -79,10 +79,9 @@ describe('authorization-selector', function() {
       assert.equal(element.selectable, '[type]');
     });
 
-    it('throws an error when trying to override', () => {
-      assert.throws(() => {
-        element.selectable = 'test'
-      });
+    it('ignores the setter', () => {
+      element.selectable = 'test'
+      assert.equal(element.selectable, '[type]');
     });
   });
 
@@ -402,7 +401,7 @@ describe('authorization-selector', function() {
     });
 
     it('returns null when no authorize function on selected item', async () => {
-      const element = await customFixture(0);
+      const element = await customFixture(6);
       const result = element.authorize();
       assert.strictEqual(result, null);
     });
