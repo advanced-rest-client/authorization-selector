@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable class-methods-use-this */
 import { html, LitElement } from 'lit-element';
 import { AnypointSelectableMixin } from '@anypoint-web-components/anypoint-selector/anypoint-selectable-mixin.js';
 import '@anypoint-web-components/anypoint-dropdown-menu/anypoint-dropdown-menu.js';
@@ -20,6 +22,8 @@ export const removeItemsListeners = Symbol('removeItemsListeners');
 export const addItemsListeners = Symbol('addItemsListeners');
 export const ensureSingleSelection = Symbol('ensureSingleSelection');
 export const selectionHandler = Symbol('selectionHandler');
+export const itemsHandler = Symbol('itemsHandler');
+export const processDocs = Symbol('processDocs');
 
 /** @typedef {import('@advanced-rest-client/authorization-method').AuthorizationMethod} AuthorizationMethod */
 /** @typedef {import('@anypoint-web-components/anypoint-dropdown-menu').AnypointDropdownMenu} AnypointDropdownMenu */
@@ -43,7 +47,7 @@ export const nodeToLabel = (node, attrForLabel) => {
   if (attrForLabel && node.hasAttribute(attrForLabel)) {
     return node.getAttribute(attrForLabel);
   }
-  let type = node.type;
+  let { type } = node;
   if (!type && node.hasAttribute('type')) {
     type = node.getAttribute('type');
   }
@@ -56,6 +60,7 @@ export const nodeToLabel = (node, attrForLabel) => {
     case 'oauth 1': return 'OAuth 1';
     case 'oauth 2': return 'OAuth 2';
     case 'client certificate': return 'Client certificate';
+    default:
   }
   return type;
 };
@@ -77,6 +82,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
   get onchange() {
     return this._onChange;
   }
+
   /**
    * Registers listener for the `change` event
    * @param {any} value A function to be called when `change` event is
@@ -93,6 +99,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     this._onChange = value;
     this.addEventListener('change', value);
   }
+
   /**
    * @return {String|null} A type attribute value of selected authorization method.
    */
@@ -134,12 +141,17 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
        * This attribute should be set on the child element.
        */
       attrForLabel: { type: String },
+      /** 
+       * When set it renders the authorization form next to the drop down.
+       * Use this when there's enough screen to render the form.
+       */
+      horizontal: { type: Boolean, reflect: true },
     };
   }
 
   constructor() {
     super();
-    this._itemsHandler = this._itemsHandler.bind(this);
+    this[itemsHandler] = this[itemsHandler].bind(this);
     this[selectionHandler] = this[selectionHandler].bind(this);
     this[methodChange] = this[methodChange].bind(this);
 
@@ -155,6 +167,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     this[dropdownSelected] = undefined;
     this.compatibility = false;
     this.outlined = false;
+    this.horizontal = false;
     /**
      * @type {string}
      */
@@ -163,7 +176,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('items-changed', this._itemsHandler);
+    this.addEventListener('items-changed', this[itemsHandler]);
     this.addEventListener('selected-changed', this[selectionHandler]);
     this[updateSelectionState]();
     if (this.attrForSelected) {
@@ -173,7 +186,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener('items-changed', this._itemsHandler);
+    this.removeEventListener('items-changed', this[itemsHandler]);
     this.removeEventListener('selected-changed', this[selectionHandler]);
   }
 
@@ -181,11 +194,13 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     const { items } = this;
     if (items && items.length) {
       this[addItemsListeners](items);
-      this._itemsHandler();
+      this[itemsHandler]();
     }
     this[dropdownSelected] = this._valueToIndex(this.selected);
+    this[processDocs]();
     this.requestUpdate();
   }
+  
   /**
    * Calls `serialize()` function on currently selected authorization method.
    * @return {any|null} Result of calling `serialize()` function on selected
@@ -196,6 +211,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     const selected = /** @type AuthorizationMethod */ (this.selectedItem);
     return selected && selected.serialize ? selected.serialize() : null;
   }
+
   /**
    * Calls `validate()` function on currently selected authorization method.
    * @return {Boolean|null} Result of calling `validate()` function on selected
@@ -206,6 +222,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     const selected = /** @type AuthorizationMethod */ (this.selectedItem);
     return selected && selected.validate ? selected.validate() : true;
   }
+
   /**
    * Calls `authorize()` function on currently selected authorization method.
    * @return {any} Result of calling `authorize()` function on selected
@@ -216,6 +233,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     const selected = /** @type AuthorizationMethod */ (this.selectedItem);
     return selected && selected.authorize ? selected.authorize() : null;
   }
+
   /**
    * Calls `serialize()` function on currently selected authorization method.
    *
@@ -235,11 +253,12 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    * A handler for `items-changed` event dispatched by the selectable mixin.
    * It manages selection state when items changed.
    */
-  _itemsHandler() {
+  [itemsHandler]() {
     this[ensureSingleSelection]();
     this[updateSelectionState]();
     this.requestUpdate();
   }
+
   /**
    * Handler for `selected-changed` event dispatched by the selectable mixin.
    *
@@ -247,9 +266,11 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    */
   [selectionHandler]() {
     this[updateSelectionState]();
+    this[processDocs]();
     this._selectSelected(this.selected);
     this[dropdownSelected] = this._valueToIndex(this.selected);
   }
+
   /**
    * A handler for the `selected-changed` event dispatched on the dropdown
    * element.
@@ -263,6 +284,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     this.selected = this._indexToValue(e.detail.value);
     this[notifyChange]();
   }
+
   /**
    * Handler for the `activate` event dispatched by the dropdown.
    * It ensures that the dropdown is closed when clicked on already selected item.
@@ -273,6 +295,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     const parent = /** @type AnypointDropdownMenu */ (node.parentElement);
     parent.close();
   }
+
   /**
    * Updates children to add or remove the `hidden` attribute depending on current selection.
    */
@@ -287,13 +310,12 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
         if (node.hasAttribute('hidden')) {
           node.removeAttribute('hidden');
         }
-      } else {
-        if (!node.hasAttribute('hidden')) {
-          node.setAttribute('hidden', '');
-        }
+      } else if (!node.hasAttribute('hidden')) {
+        node.setAttribute('hidden', '');
       }
     }
   }
+
   /**
    * Ensures that authorization method is selected if only one item is
    * recognized.
@@ -310,6 +332,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     this[dropdownSelected] = 0;
     this[selectionHandler]();
   }
+
   /**
    * Overrides `_mutationHandler()` from the selectable mixin to add/remove
    * `change` event on authorization methods being added / removed.
@@ -324,11 +347,12 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
           this[removeItemsListeners](mutation.removedNodes);
           this.requestUpdate();
         } else if (mutation.addedNodes.length) {
-          this[addItemsListeners](mutation.removedNodes);
+          this[addItemsListeners](mutation.addedNodes);
         }
       }
     }
   }
+
   /**
    * Tests whether a node in a list of removed nodes represents currently selected
    * authorization method. If so then it removes current selection.
@@ -341,7 +365,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
     if (!dropdown) {
       return;
     }
-    const value = dropdown.value;
+    const { value } = dropdown;
     const { attrForLabel } = this;
     for (let i = 0, len = nodesList.length; i < len; i++) {
       const candidate = /** @type AuthorizationMethod */ (nodesList[i]);
@@ -354,6 +378,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
       }
     }
   }
+
   /**
    * Removes `change` observer from passed nodes.
    *
@@ -364,6 +389,7 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
       nodes[i].removeEventListener('change', this[methodChange]);
     }
   }
+
   /**
    * Adds `change` observer to passed nodes.
    * It is safe to call it more than once on the same nodes list as it removes
@@ -372,11 +398,12 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
    * @param {Array<Node>|NodeList} nodes List of nodes to add event listener to.
    */
   [addItemsListeners](nodes) {
-    for (let i = 0; i < nodes.length; i++) {
-      nodes[i].removeEventListener('change', this[methodChange]);
-      nodes[i].addEventListener('change', this[methodChange]);
-    }
+    Array.from(nodes).forEach((node) => {
+      node.removeEventListener('change', this[methodChange]);
+      node.addEventListener('change', this[methodChange]);
+    });
   }
+
   /**
    * Handler for authorization method `change` event that re-targets
    * the event to be dispatched from this element.
@@ -391,12 +418,44 @@ export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
   [notifyChange]() {
     this.dispatchEvent(new CustomEvent('change'));
   }
+  
+  /**
+   * It checks whether the current selection has an element that describes it via 
+   * the ARIA attribute, and if so then it renders it in the slot.
+   */
+  [processDocs]() {
+    const slot = /** @type HTMLSlotElement */ (this.shadowRoot.querySelector('slot[name="aria"]'));
+    if (!slot) {
+      return;
+    }
+    const slotted = slot.assignedElements();
+    if (slotted.length === 0) {
+      return;
+    }
+    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
+    if (!selected) {
+      slotted.forEach((node) => node.setAttribute('hidden', ''));
+      return;
+    }
+    const id = selected.getAttribute('aria-describedby');
+    slotted.forEach((node) => {
+      const ariaId = node.getAttribute('id');
+      node.toggleAttribute('hidden', ariaId !== id);
+    });
+  }
 
   render() {
     return html`
     <style>${this.styles}</style>
-    ${this[methodSelectorTemplate]()}
-    <slot></slot>
+    <div class="container">
+      <div class="selector">
+        ${this[methodSelectorTemplate]()}
+        <slot name="aria"></slot>
+      </div>
+      <div class="auth">
+        <slot></slot>
+      </div>
+    </div>
     `;
   }
 

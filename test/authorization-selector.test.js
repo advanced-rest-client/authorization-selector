@@ -2,14 +2,13 @@ import { fixture, assert, html, nextFrame } from '@open-wc/testing';
 import * as sinon from 'sinon';
 import * as MockInteractions from '@polymer/iron-test-helpers/mock-interactions.js';
 import '@advanced-rest-client/authorization-method/authorization-method.js';
-import { nodeToLabel } from '../src/AuthorizationSelector.js';
 import '../authorization-selector.js';
 import './custom-method.js';
-import { dropdownSelected, dropdownValue, notifyChange } from '../src/AuthorizationSelector.js';
+import { dropdownSelected, dropdownValue, notifyChange, nodeToLabel } from '../src/AuthorizationSelector.js';
 
 /** @typedef {import('../index').AuthorizationSelector} AuthorizationSelector */
 
-describe('authorization-selector', function() {
+describe('authorization-selector', () => {
   /**
    * @returns {Promise<AuthorizationSelector>}
    */
@@ -22,7 +21,7 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function methodsFixture(selected) {
-    return (await fixture(html`<authorization-selector .selected="${selected}">
+    return (fixture(html`<authorization-selector .selected="${selected}">
       <authorization-method type="basic"></authorization-method>
       <authorization-method type="ntlm"></authorization-method>
     </authorization-selector>`));
@@ -32,7 +31,7 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function singleFixture() {
-    return (await fixture(html`<authorization-selector>
+    return (fixture(html`<authorization-selector>
       <authorization-method type="basic"></authorization-method>
     </authorization-selector>`));
   }
@@ -42,7 +41,7 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function attrForSelectedFixture(selected) {
-    return (await fixture(html`<authorization-selector .selected="${selected}" attrforselected="type">
+    return (fixture(html`<authorization-selector .selected="${selected}" attrforselected="type">
       <authorization-method type="basic"></authorization-method>
       <authorization-method type="ntlm"></authorization-method>
     </authorization-selector>`));
@@ -53,7 +52,7 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function customFixture(selected) {
-    return (await fixture(html`<authorization-selector .selected="${selected}" attrForLabel="data-label">
+    return (fixture(html`<authorization-selector .selected="${selected}" attrForLabel="data-label">
       <authorization-method type="basic"></authorization-method>
       <div type="noop-custom"></div>
       <custom-auth-method type="test-custom" data-label="Test custom"></custom-auth-method>
@@ -65,7 +64,7 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function labelsFixture() {
-    return (await fixture(html`<authorization-selector attrForLabel="data-label">
+    return (fixture(html`<authorization-selector attrForLabel="data-label">
       <authorization-method type="basic"></authorization-method>
       <authorization-method type="basic" data-label="Test Basic"></authorization-method>
       <custom-auth-method type="test-custom" data-label="Test Custom"></custom-auth-method>
@@ -79,9 +78,23 @@ describe('authorization-selector', function() {
    * @returns {Promise<AuthorizationSelector>}
    */
   async function authorizeFixture(selected) {
-    return (await fixture(html`<authorization-selector .selected="${selected}">
+    return (fixture(html`<authorization-selector .selected="${selected}">
       <authorization-method type="basic"></authorization-method>
       <authorization-method type="oauth 2"></authorization-method>
+    </authorization-selector>`));
+  }
+
+  /**
+   * @param {string|number=} selected
+   * @returns {Promise<AuthorizationSelector>}
+   */
+  async function docsFixture(selected) {
+    return (fixture(html`
+    <authorization-selector .selected="${selected}">
+      <authorization-method type="basic" aria-describedby="basicDocs"></authorization-method>
+      <div slot="aria" id="basicDocs">basic-docs</div>
+      <authorization-method type="oauth 2" aria-describedby="oauth2Docs"></authorization-method>
+      <div slot="aria" id="oauth2Docs">basic-docs</div>
     </authorization-selector>`));
   }
 
@@ -117,7 +130,7 @@ describe('authorization-selector', function() {
     it('renders no authorization method when no selection', async () => {
       const element = await methodsFixture();
       const nodes = element.querySelector('authorization-method');
-      const node = Array.from(nodes).some((node) => !node.hasAttribute('hidden'));
+      const node = Array.from(nodes).some((n) => !n.hasAttribute('hidden'));
       assert.notOk(node, 'all nodes are hidden');
     });
 
@@ -472,6 +485,31 @@ describe('authorization-selector', function() {
         username: 'test-u',
         password: 'test-p'
       });
+    });
+  });
+
+  describe('slotted docs rendering', () => {
+    it('hides all docs elements in the aria slot', async () => {
+      const element = await docsFixture();
+      const nodes = element.querySelectorAll('[slot="aria"]');
+      assert.isTrue(nodes[0].hasAttribute('hidden'));
+      assert.isTrue(nodes[1].hasAttribute('hidden'));
+    });
+
+    it('shows pre-selected description', async () => {
+      const element = await docsFixture(0);
+      const nodes = element.querySelectorAll('[slot="aria"]');
+      assert.isFalse(nodes[0].hasAttribute('hidden'));
+      assert.isTrue(nodes[1].hasAttribute('hidden'));
+    });
+
+    it('changes rendered docs when selection change', async () => {
+      const element = await docsFixture(0);
+      element.selected = 1;
+      await nextFrame();
+      const nodes = element.querySelectorAll('[slot="aria"]');
+      assert.isTrue(nodes[0].hasAttribute('hidden'));
+      assert.isFalse(nodes[1].hasAttribute('hidden'));
     });
   });
 

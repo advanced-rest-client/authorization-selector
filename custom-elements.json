@@ -1,63 +1,239 @@
 {
-  "version": 2,
+  "version": "experimental",
   "tags": [
     {
       "name": "authorization-selector",
-      "description": "An element to render single authorization method from a list of defined methods",
-      "properties": [
-        {
-          "name": "onchange",
-          "type": "Function",
-          "description": "A function to be called when change event is dispatched"
-        },
-        {
-          "name": "_dropdown",
-          "type": "Element",
-          "readOnly": true
-        },
-        {
-          "name": "selectable",
-          "type": "String",
-          "readOnly": true
-        },
-        {
-          "name": "type",
-          "type": "String",
-          "description": "A type attribute value of selected authorization method."
-        },
+      "path": "./authorization-selector.js",
+      "attributes": [
         {
           "name": "outlined",
-          "type": "Boolean",
-          "description": "Enables outlined theme."
+          "description": "Enables outlined theme.",
+          "type": "boolean"
         },
         {
           "name": "compatibility",
-          "type": "Boolean",
-          "description": "Enables compatibility with Anypoint components."
+          "description": "Enables compatibility with Anypoint components.",
+          "type": "boolean"
         },
         {
           "name": "attrForLabel",
-          "type": "String",
-          "description": "An attrribute to use to read value for the lable to be rendered in the drop down when `type` property cannot be translated to a common name.\n\nThis attribute should be set on the child element."
+          "description": "An attribute to use to read value for the label to be rendered in the\ndrop down when `type` property cannot be translated to a common name.\n\nThis attribute should be set on the child element.",
+          "type": "string"
         },
         {
-          "name": "_dropdownSelected",
-          "type": "Number"
+          "name": "horizontal",
+          "description": "When set it renders the authorization form next to the drop down.\nUse this when there's enough screen to render the form.",
+          "type": "boolean"
+        },
+        {
+          "name": "attrForSelected",
+          "description": "If you want to use an attribute value or property of an element for\n`selected` instead of the index, set this to the name of the attribute\nor property. Hyphenated values are converted to camel case when used to\nlook up the property of a selectable element. Camel cased values are\n*not* converted to hyphenated values for attribute lookup. It's\nrecommended that you provide the hyphenated form of the name so that\nselection works in both cases. (Use `attr-or-property-name` instead of\n`attrOrPropertyName`.)",
+          "type": "string"
+        },
+        {
+          "name": "selected",
+          "description": "Gets or sets the selected element. The default is to use the index of the item.",
+          "type": "string | number"
+        },
+        {
+          "name": "activateEvent",
+          "description": "The event that fires from items when they are selected. Selectable\nwill listen for this event from items and update the selection state.\nSet to empty string to listen to no events.",
+          "type": "string",
+          "default": "\"click\""
+        },
+        {
+          "name": "selectable",
+          "description": "This is a CSS selector string.  If this is set, only items that match the\nCSS selector are selectable.",
+          "type": "string"
+        },
+        {
+          "name": "selectedClass",
+          "description": "The class to set on elements when selected.",
+          "type": "string",
+          "default": "\"selected\""
+        },
+        {
+          "name": "selectedAttribute",
+          "description": "The attribute to set on elements when selected.",
+          "type": "string"
+        },
+        {
+          "name": "fallbackSelection",
+          "description": "Default fallback if the selection based on selected with `attrForSelected` is not found.",
+          "type": "string | number"
+        }
+      ],
+      "properties": [
+        {
+          "name": "styles",
+          "type": "CSSResult"
+        },
+        {
+          "name": "onchange",
+          "type": "EventListener"
+        },
+        {
+          "name": "type",
+          "type": "string | null"
+        },
+        {
+          "name": "outlined",
+          "attribute": "outlined",
+          "description": "Enables outlined theme.",
+          "type": "boolean"
+        },
+        {
+          "name": "compatibility",
+          "attribute": "compatibility",
+          "description": "Enables compatibility with Anypoint components.",
+          "type": "boolean"
+        },
+        {
+          "name": "attrForLabel",
+          "attribute": "attrForLabel",
+          "description": "An attribute to use to read value for the label to be rendered in the\ndrop down when `type` property cannot be translated to a common name.\n\nThis attribute should be set on the child element.",
+          "type": "string"
+        },
+        {
+          "name": "horizontal",
+          "attribute": "horizontal",
+          "description": "When set it renders the authorization form next to the drop down.\nUse this when there's enough screen to render the form.",
+          "type": "boolean"
+        },
+        {
+          "name": "attrForSelected",
+          "attribute": "attrForSelected",
+          "description": "If you want to use an attribute value or property of an element for\n`selected` instead of the index, set this to the name of the attribute\nor property. Hyphenated values are converted to camel case when used to\nlook up the property of a selectable element. Camel cased values are\n*not* converted to hyphenated values for attribute lookup. It's\nrecommended that you provide the hyphenated form of the name so that\nselection works in both cases. (Use `attr-or-property-name` instead of\n`attrOrPropertyName`.)",
+          "type": "string"
+        },
+        {
+          "name": "selected",
+          "attribute": "selected",
+          "description": "Gets or sets the selected element. The default is to use the index of the item.",
+          "type": "string | number"
+        },
+        {
+          "name": "selectedItem",
+          "description": "Returns the currently selected item.",
+          "type": "HTMLElement | undefined"
+        },
+        {
+          "name": "activateEvent",
+          "attribute": "activateEvent",
+          "description": "The event that fires from items when they are selected. Selectable\nwill listen for this event from items and update the selection state.\nSet to empty string to listen to no events.",
+          "type": "string",
+          "default": "\"click\""
+        },
+        {
+          "name": "selectable",
+          "attribute": "selectable",
+          "description": "This is a CSS selector string.  If this is set, only items that match the\nCSS selector are selectable.",
+          "type": "string"
+        },
+        {
+          "name": "selectedClass",
+          "attribute": "selectedClass",
+          "description": "The class to set on elements when selected.",
+          "type": "string",
+          "default": "\"selected\""
+        },
+        {
+          "name": "selectedAttribute",
+          "attribute": "selectedAttribute",
+          "description": "The attribute to set on elements when selected.",
+          "type": "string"
+        },
+        {
+          "name": "fallbackSelection",
+          "attribute": "fallbackSelection",
+          "description": "Default fallback if the selection based on selected with `attrForSelected` is not found.",
+          "type": "string | number"
+        },
+        {
+          "name": "items",
+          "description": "The list of items from which a selection can be made.",
+          "type": "HTMLElement[]"
+        },
+        {
+          "name": "onselectedchanged",
+          "type": "EventListener"
+        },
+        {
+          "name": "onselectedchange",
+          "type": "EventListener"
+        },
+        {
+          "name": "onselecteditemchanged",
+          "type": "EventListener"
+        },
+        {
+          "name": "onselecteditemchange",
+          "type": "EventListener"
+        },
+        {
+          "name": "onitemschanged",
+          "type": "EventListener"
+        },
+        {
+          "name": "onitemschange",
+          "type": "EventListener"
+        },
+        {
+          "name": "onselect",
+          "type": "EventListener"
+        },
+        {
+          "name": "ondeselect",
+          "type": "EventListener"
+        },
+        {
+          "name": "onactivate",
+          "type": "EventListener"
         }
       ],
       "events": [
         {
           "name": "change",
-          "description": "Dispatched when method selection change or a method element dispatches change event (retargeting)"
+          "description": "When configuration change"
+        },
+        {
+          "name": "selected-changed"
+        },
+        {
+          "name": "selectedchange"
+        },
+        {
+          "name": "selecteditem-changed"
+        },
+        {
+          "name": "selecteditemchange"
+        },
+        {
+          "name": "items-changed"
+        },
+        {
+          "name": "itemschange"
+        },
+        {
+          "name": "select"
+        },
+        {
+          "name": "deselect"
+        },
+        {
+          "name": "activate"
         }
       ],
       "slots": [
         {
           "name": "",
-          "description": "Renders the authorization methods that has `type` property. Everything else ios rendered as is."
+          "description": "Authorization method to be rendered. Must have `type` attribute to be rendered."
+        },
+        {
+          "name": "aria",
+          "description": "For description of the selected method. Recognized by `aria-describedby` property of the auth method"
         }
-      ],
-      "cssProperties": []
+      ]
     }
   ]
 }

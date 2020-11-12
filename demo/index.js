@@ -19,12 +19,14 @@ class ComponentDemoPage extends DemoPage {
       'outlined',
       'changeCounter',
       'allowNone',
+      'horizontal',
     ]);
     this._componentName = 'authorization-selector';
     this.demoStates = ['Filled', 'Outlined', 'Anypoint'];
     this.demoState = 0;
     this.changeCounter = 0;
     this.allowNone = false;
+    this.horizontal = false;
 
     const base = `${location.protocol}//${location.host}`;
     this.authorizationUri = `${base}${location.pathname}oauth-authorize.html`;
@@ -117,7 +119,11 @@ class ComponentDemoPage extends DemoPage {
       type="basic"
       .username="${username}"
       .password="${password}"
-    ></authorization-method>`;
+      aria-describedby="basicDesc"
+    ></authorization-method>
+    <p id="basicDesc" slot="aria">
+      Basic authorization allows to send a username and a password in a request header.
+    </p>`;
   }
 
   _ntlmTemplate(config={}) {
@@ -139,7 +145,11 @@ class ComponentDemoPage extends DemoPage {
       .username="${username}"
       .password="${password}"
       .domain="${domain}"
-    ></authorization-method>`;
+      aria-describedby="ntlmDesc"
+    ></authorization-method>
+    <p id="ntlmDesc" slot="aria">
+      NTLM authorization is used with Microsoft NT domains.
+    </p>`;
   }
 
   _digestTemplate(config={}) {
@@ -195,7 +205,8 @@ class ComponentDemoPage extends DemoPage {
       consumerKey, consumerSecret, token, tokenSecret, timestamp,
       nonce, realm, signatureMethod, authTokenMethod, authParamsLocation,
     } = (type === 'oauth 1' ? config.config : defaults);
-    return html`<authorization-method
+    return html`
+    <authorization-method
       ?compatibility="${compatibility}"
       ?outlined="${outlined}"
       type="oauth 1"
@@ -212,7 +223,13 @@ class ComponentDemoPage extends DemoPage {
       .authParamsLocation="${authParamsLocation}"
       requestTokenUri="http://term.ie/oauth/example/request_token.php"
       accessTokenUri="http://term.ie/oauth/example/access_token.php"
-    ></authorization-method>`;
+      aria-describedby="oauth1desc"
+    ></authorization-method>
+    <p id="oauth1desc" slot="aria">
+      OAuth 1 is the original OAuth specification for the authorization.
+      This method is no longer considered secure.
+    </p>
+    `;
   }
 
   _oa2Template(config={}) {
@@ -241,7 +258,8 @@ class ComponentDemoPage extends DemoPage {
     if (!authorizationUri) {
       authorizationUri = this.authorizationUri
     }
-    return html`<authorization-method
+    return html`
+    <authorization-method
       ?compatibility="${compatibility}"
       ?outlined="${outlined}"
       type="oauth 2"
@@ -258,7 +276,21 @@ class ComponentDemoPage extends DemoPage {
       .username="${username}"
       .password="${password}"
       redirectUri="${oauth2redirect}"
-    ></authorization-method>`;
+      aria-describedby="oauth2desc"
+    ></authorization-method>
+    <div id="oauth2desc" slot="aria">OAuth 2 is the most popular authentication method for web services.</div>
+    `;
+  }
+
+  _noneTemplate() {
+    const { allowNone } = this;
+    if (!allowNone) {
+      return '';
+    }
+    return html`
+    <div type="none" aria-describedby="noneDesc">Authorization configuration is disabled</div>
+    <p id="noneDesc" slot="aria">Select authorization method required by the API.</p>
+    `;
   }
 
   _demoTemplate() {
@@ -270,7 +302,7 @@ class ComponentDemoPage extends DemoPage {
       demoState,
       changeCounter,
       authConfiguration,
-      allowNone,
+      horizontal,
     } = this;
     const selected = authConfiguration ? authConfiguration.selected : undefined;
     return html`
@@ -292,8 +324,9 @@ class ComponentDemoPage extends DemoPage {
             slot="content"
             @change="${this._mainChangeHandler}"
             .selected="${selected}"
+            ?horizontal="${horizontal}"
           >
-            ${allowNone ? html`<div type="none">Authorization configuration is disabled</div>` : ''}
+            ${this._noneTemplate()}
             ${this._basicTemplate(authConfiguration)}
             ${this._ntlmTemplate(authConfiguration)}
             ${this._digestTemplate(authConfiguration)}
@@ -307,8 +340,13 @@ class ComponentDemoPage extends DemoPage {
             slot="options"
             name="allowNone"
             @change="${this._toggleMainOption}"
-            >Alow "None"</anypoint-checkbox
-          >
+          >Alow "None"</anypoint-checkbox>
+          <anypoint-checkbox
+            aria-describedby="mainOptionsLabel"
+            slot="options"
+            name="horizontal"
+            @change="${this._toggleMainOption}"
+          >Horizontal"</anypoint-checkbox>
         </arc-interactive-demo>
         <p>Change event dispatched ${changeCounter} time(s)</p>
       </section>

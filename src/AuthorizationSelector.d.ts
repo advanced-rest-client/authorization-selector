@@ -17,6 +17,7 @@ export declare const removeItemsListeners: unique symbol;
 export declare const addItemsListeners: unique symbol;
 export declare const ensureSingleSelection: unique symbol;
 export declare const selectionHandler: unique symbol;
+export declare const processDocs: unique symbol;
 
 /**
  * A function that maps a value of the `type` attribute of an authorization method
@@ -30,6 +31,11 @@ export declare const selectionHandler: unique symbol;
  */
 export declare function nodeToLabel(node: AuthorizationMethod, attrForLabel?: string): string;
 
+/**
+ * @fires change When configuration change
+ * @slot - Authorization method to be rendered. Must have `type` attribute to be rendered.
+ * @slot aria - For description of the selected method. Recognized by `aria-describedby` property of the auth method
+ */
 export declare class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
   get styles(): CSSResult;
   get [dropdownValue](): AnypointDropdownMenu;
@@ -56,6 +62,14 @@ export declare class AuthorizationSelector extends AnypointSelectableMixin(LitEl
    * @attribute
    */
   attrForLabel: string;
+
+  /** 
+   * When set it renders the authorization form next to the drop down.
+   * Use this when there's enough screen to render the form.
+   * 
+   * @attribute
+   */
+  horizontal: boolean;
 
   [dropdownSelected]: number;
 
@@ -180,6 +194,12 @@ export declare class AuthorizationSelector extends AnypointSelectableMixin(LitEl
    * Dispatches non-bubbling `change` event.
    */
   [notifyChange](): void;
+  
+  /**
+   * It checks whether the current selection has an element that describes it via 
+   * the ARIA attribute, and if so then it renders it in the slot.
+   */
+  [processDocs](): void;
 
   render(): TemplateResult;
   [methodSelectorTemplate](): TemplateResult|string;
