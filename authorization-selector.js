@@ -1,4 +1,3 @@
-import { AuthorizationSelector } from './src/AuthorizationSelector.js';
-export { AuthorizationSelector };
+import { AuthorizationSelectorElement } from './src/AuthorizationSelectorElement.js';
 
-window.customElements.define('authorization-selector', AuthorizationSelector);
+window.customElements.define('authorization-selector', AuthorizationSelectorElement);

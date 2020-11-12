@@ -65,7 +65,7 @@ export const nodeToLabel = (node, attrForLabel) => {
   return type;
 };
 
-export class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
+export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitElement) {
   get styles() {
     return [
       styles,

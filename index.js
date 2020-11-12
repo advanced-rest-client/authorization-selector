@@ -1,1 +1,1 @@
-export { AuthorizationSelector } from './src/AuthorizationSelector.js';
+export { AuthorizationSelectorElement } from './src/AuthorizationSelectorElement.js';

@@ -36,7 +36,7 @@ export declare function nodeToLabel(node: AuthorizationMethod, attrForLabel?: st
  * @slot - Authorization method to be rendered. Must have `type` attribute to be rendered.
  * @slot aria - For description of the selected method. Recognized by `aria-describedby` property of the auth method
  */
-export declare class AuthorizationSelector extends AnypointSelectableMixin(LitElement) {
+export declare class AuthorizationSelectorElement extends AnypointSelectableMixin(LitElement) {
   get styles(): CSSResult;
   get [dropdownValue](): AnypointDropdownMenu;
   onchange: EventListener;

@@ -1,7 +1,7 @@
-import {AuthorizationSelector} from './src/AuthorizationSelector';
+import { AuthorizationSelectorElement } from './src/AuthorizationSelectorElement';
 
 declare global {
   interface HTMLElementTagNameMap {
-    "authorization-selector": AuthorizationSelector;
+    "authorization-selector": AuthorizationSelectorElement;
   }
 }

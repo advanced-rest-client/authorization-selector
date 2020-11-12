@@ -4,13 +4,13 @@ import * as MockInteractions from '@polymer/iron-test-helpers/mock-interactions.
 import '@advanced-rest-client/authorization-method/authorization-method.js';
 import '../authorization-selector.js';
 import './custom-method.js';
-import { dropdownSelected, dropdownValue, notifyChange, nodeToLabel } from '../src/AuthorizationSelector.js';
+import { dropdownSelected, dropdownValue, notifyChange, nodeToLabel } from '../src/AuthorizationSelectorElement.js';
 
-/** @typedef {import('../index').AuthorizationSelector} AuthorizationSelector */
+/** @typedef {import('../index').AuthorizationSelectorElement} AuthorizationSelectorElement */
 
 describe('authorization-selector', () => {
   /**
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function basicFixture() {
     return fixture(html`<authorization-selector></authorization-selector>`);
@@ -18,7 +18,7 @@ describe('authorization-selector', () => {
 
   /**
    * @param {number=} selected
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function methodsFixture(selected) {
     return (fixture(html`<authorization-selector .selected="${selected}">
@@ -28,7 +28,7 @@ describe('authorization-selector', () => {
   }
 
   /**
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function singleFixture() {
     return (fixture(html`<authorization-selector>
@@ -38,7 +38,7 @@ describe('authorization-selector', () => {
 
   /**
    * @param {string=} selected
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function attrForSelectedFixture(selected) {
     return (fixture(html`<authorization-selector .selected="${selected}" attrforselected="type">
@@ -49,7 +49,7 @@ describe('authorization-selector', () => {
 
   /**
    * @param {string|number=} selected
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function customFixture(selected) {
     return (fixture(html`<authorization-selector .selected="${selected}" attrForLabel="data-label">
@@ -61,7 +61,7 @@ describe('authorization-selector', () => {
   }
 
   /**
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function labelsFixture() {
     return (fixture(html`<authorization-selector attrForLabel="data-label">
@@ -75,7 +75,7 @@ describe('authorization-selector', () => {
 
   /**
    * @param {string|number=} selected
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function authorizeFixture(selected) {
     return (fixture(html`<authorization-selector .selected="${selected}">
@@ -86,7 +86,7 @@ describe('authorization-selector', () => {
 
   /**
    * @param {string|number=} selected
-   * @returns {Promise<AuthorizationSelector>}
+   * @returns {Promise<AuthorizationSelectorElement>}
    */
   async function docsFixture(selected) {
     return (fixture(html`
@@ -111,7 +111,7 @@ describe('authorization-selector', () => {
   });
 
   describe('#selectable', () => {
-    let element = /** @type AuthorizationSelector */ (null);
+    let element = /** @type AuthorizationSelectorElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
@@ -362,7 +362,7 @@ describe('authorization-selector', () => {
   });
 
   describe('onchange', () => {
-    let element = /** @type AuthorizationSelector */ (null);
+    let element = /** @type AuthorizationSelectorElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
