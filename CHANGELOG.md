@@ -80,3 +80,31 @@
 * adding tests [10e555f](https://github.com/advanced-rest-client/authorization-selector/commit/10e555f3de1506ea061d6e4a25b0cac3a8475369) by Pawel Psztyc
 
 
+<a name="0.2.0"></a>
+## [0.2.0](https://github.com/advanced-rest-client/authorization-selector/compare/0.1.1...0.2.0) (2020-11-12)
+
+### Build
+
+* bumping version [efef514](https://github.com/advanced-rest-client/authorization-selector/commit/efef514ab761d5ca177e32647482971aee33d6bd) by Pawel
+
+
+### Update
+
+* [ci skip] automated merge master->stage. syncing main branches [1144bb5](https://github.com/advanced-rest-client/authorization-selector/commit/1144bb583e6a7976ad480b26ddaa4bfa9663f394) by Ci agent
+
+
+### Features
+
+* adding horizontal view and docs [36f6263](https://github.com/advanced-rest-client/authorization-selector/commit/36f626379df1203b54e421ee22c05611756828df) by Pawel
+
+
+### Bug Fixes
+
+* fixing selection state when after menu mixin upgrade [a46ad56](https://github.com/advanced-rest-client/authorization-selector/commit/a46ad5673f3994343f06c867ab427e7c455529ae) by Pawel
+
+
+### Refactor
+
+* upgrading to ARC types [3055f67](https://github.com/advanced-rest-client/authorization-selector/commit/3055f67ff514d8ff19783239c5dcd9c14e16302c) by Pawel
+
+
