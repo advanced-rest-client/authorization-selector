@@ -1,5 +1,5 @@
 import { html } from 'lit-element';
-import { ArcDemoPage } from '@advanced-rest-client/arc-demo-helper/ArcDemoPage.js';
+import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
 import '@advanced-rest-client/authorization-method/authorization-method.js';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
@@ -10,7 +10,7 @@ import './custom-method.js';
 
 const STORE_KEY = 'auth-selector-config';
 
-class DemoPage extends ArcDemoPage {
+class ComponentDemoPage extends DemoPage {
   constructor() {
     super();
     this.initObservableProperties([
@@ -19,11 +19,14 @@ class DemoPage extends ArcDemoPage {
       'outlined',
       'changeCounter',
       'allowNone',
+      'horizontal',
     ]);
     this._componentName = 'authorization-selector';
     this.demoStates = ['Filled', 'Outlined', 'Anypoint'];
     this.demoState = 0;
     this.changeCounter = 0;
+    this.allowNone = false;
+    this.horizontal = false;
 
     const base = `${location.protocol}//${location.host}`;
     this.authorizationUri = `${base}${location.pathname}oauth-authorize.html`;
@@ -67,6 +70,7 @@ class DemoPage extends ArcDemoPage {
     this.demoState = state;
     this.outlined = state === 1;
     this.compatibility = state === 2;
+    this._updateCompatibility();
   }
 
   _mainChangeHandler(e) {
@@ -115,7 +119,11 @@ class DemoPage extends ArcDemoPage {
       type="basic"
       .username="${username}"
       .password="${password}"
-    ></authorization-method>`;
+      aria-describedby="basicDesc"
+    ></authorization-method>
+    <p id="basicDesc" slot="aria">
+      Basic authorization allows to send a username and a password in a request header.
+    </p>`;
   }
 
   _ntlmTemplate(config={}) {
@@ -137,7 +145,11 @@ class DemoPage extends ArcDemoPage {
       .username="${username}"
       .password="${password}"
       .domain="${domain}"
-    ></authorization-method>`;
+      aria-describedby="ntlmDesc"
+    ></authorization-method>
+    <p id="ntlmDesc" slot="aria">
+      NTLM authorization is used with Microsoft NT domains.
+    </p>`;
   }
 
   _digestTemplate(config={}) {
@@ -193,7 +205,8 @@ class DemoPage extends ArcDemoPage {
       consumerKey, consumerSecret, token, tokenSecret, timestamp,
       nonce, realm, signatureMethod, authTokenMethod, authParamsLocation,
     } = (type === 'oauth 1' ? config.config : defaults);
-    return html`<authorization-method
+    return html`
+    <authorization-method
       ?compatibility="${compatibility}"
       ?outlined="${outlined}"
       type="oauth 1"
@@ -208,9 +221,15 @@ class DemoPage extends ArcDemoPage {
       .signatureMethod="${signatureMethod}"
       .authTokenMethod="${authTokenMethod}"
       .authParamsLocation="${authParamsLocation}"
-      requesttokenuri="http://term.ie/oauth/example/request_token.php"
-      accesstokenuri="http://term.ie/oauth/example/access_token.php"
-    ></authorization-method>`;
+      requestTokenUri="http://term.ie/oauth/example/request_token.php"
+      accessTokenUri="http://term.ie/oauth/example/access_token.php"
+      aria-describedby="oauth1desc"
+    ></authorization-method>
+    <p id="oauth1desc" slot="aria">
+      OAuth 1 is the original OAuth specification for the authorization.
+      This method is no longer considered secure.
+    </p>
+    `;
   }
 
   _oa2Template(config={}) {
@@ -239,7 +258,8 @@ class DemoPage extends ArcDemoPage {
     if (!authorizationUri) {
       authorizationUri = this.authorizationUri
     }
-    return html`<authorization-method
+    return html`
+    <authorization-method
       ?compatibility="${compatibility}"
       ?outlined="${outlined}"
       type="oauth 2"
@@ -249,14 +269,28 @@ class DemoPage extends ArcDemoPage {
       .clientId="${clientId}"
       .clientSecret="${clientSecret}"
       .grantType="${grantType}"
-      .deliveryMethod="${deliveryMethod}"
-      .deliveryName="${deliveryName}"
+      .oauthDeliveryMethod="${deliveryMethod}"
+      .oauthDeliveryName="${deliveryName}"
       .authorizationUri="${authorizationUri}"
       .accessTokenUri="${accessTokenUri}"
       .username="${username}"
       .password="${password}"
       redirectUri="${oauth2redirect}"
-    ></authorization-method>`;
+      aria-describedby="oauth2desc"
+    ></authorization-method>
+    <div id="oauth2desc" slot="aria">OAuth 2 is the most popular authentication method for web services.</div>
+    `;
+  }
+
+  _noneTemplate() {
+    const { allowNone } = this;
+    if (!allowNone) {
+      return '';
+    }
+    return html`
+    <div type="none" aria-describedby="noneDesc">Authorization configuration is disabled</div>
+    <p id="noneDesc" slot="aria">Select authorization method required by the API.</p>
+    `;
   }
 
   _demoTemplate() {
@@ -268,7 +302,7 @@ class DemoPage extends ArcDemoPage {
       demoState,
       changeCounter,
       authConfiguration,
-      allowNone,
+      horizontal,
     } = this;
     const selected = authConfiguration ? authConfiguration.selected : undefined;
     return html`
@@ -281,7 +315,7 @@ class DemoPage extends ArcDemoPage {
         <arc-interactive-demo
           .states="${demoStates}"
           .selectedState="${demoState}"
-          @state-chanegd="${this._demoStateHandler}"
+          @state-changed="${this._demoStateHandler}"
           ?dark="${darkThemeActive}"
         >
           <authorization-selector
@@ -290,8 +324,9 @@ class DemoPage extends ArcDemoPage {
             slot="content"
             @change="${this._mainChangeHandler}"
             .selected="${selected}"
+            ?horizontal="${horizontal}"
           >
-            ${allowNone ? html`<div type="none">Authorization configuration is disabled</div>` : ''}
+            ${this._noneTemplate()}
             ${this._basicTemplate(authConfiguration)}
             ${this._ntlmTemplate(authConfiguration)}
             ${this._digestTemplate(authConfiguration)}
@@ -305,8 +340,13 @@ class DemoPage extends ArcDemoPage {
             slot="options"
             name="allowNone"
             @change="${this._toggleMainOption}"
-            >Alow "None"</anypoint-checkbox
-          >
+          >Alow "None"</anypoint-checkbox>
+          <anypoint-checkbox
+            aria-describedby="mainOptionsLabel"
+            slot="options"
+            name="horizontal"
+            @change="${this._toggleMainOption}"
+          >Horizontal"</anypoint-checkbox>
         </arc-interactive-demo>
         <p>Change event dispatched ${changeCounter} time(s)</p>
       </section>
@@ -326,7 +366,7 @@ class DemoPage extends ArcDemoPage {
       <arc-interactive-demo
         .states="${demoStates}"
         .selectedState="${demoState}"
-        @state-chanegd="${this._demoStateHandler}"
+        @state-changed="${this._demoStateHandler}"
         ?dark="${darkThemeActive}"
       >
 
@@ -354,7 +394,7 @@ class DemoPage extends ArcDemoPage {
       <arc-interactive-demo
         .states="${demoStates}"
         .selectedState="${demoState}"
-        @state-chanegd="${this._demoStateHandler}"
+        @state-changed="${this._demoStateHandler}"
         ?dark="${darkThemeActive}"
       >
 
@@ -375,7 +415,7 @@ class DemoPage extends ArcDemoPage {
     `;
   }
 
-  _customMeythodsTemplate() {
+  _customMethodsTemplate() {
     const {
       demoStates,
       darkThemeActive,
@@ -386,13 +426,13 @@ class DemoPage extends ArcDemoPage {
     return html`
       <h3>Custom authorization methods</h3>
       <p>
-        Simply add any HTML element with "type" attribute. Optionally add the "attrforlabel"
+        Simply add any HTML element with "type" attribute. Optionally add the "attrForLabel"
         to tell which attribute has a value for the drop down selector.
       </p>
       <arc-interactive-demo
         .states="${demoStates}"
         .selectedState="${demoState}"
-        @state-chanegd="${this._demoStateHandler}"
+        @state-changed="${this._demoStateHandler}"
         ?dark="${darkThemeActive}"
       >
 
@@ -400,7 +440,7 @@ class DemoPage extends ArcDemoPage {
           ?compatibility="${compatibility}"
           ?outlined="${outlined}"
           slot="content"
-          attrforlabel="label"
+          attrForLabel="label"
           @change="${this._customChangeHandler}"
         >
           ${this._ntlmTemplate()}
@@ -421,13 +461,13 @@ class DemoPage extends ArcDemoPage {
       <section class="documentation-section">
         <h2>Introduction</h2>
         <p>
-          A web component to render signle authorization method from a list of available methods.
+          A web component to render a single authorization method from a list of available methods.
         </p>
         <p>
           This component implements Material Design styles.
         </p>
       </section>
-      <client-certificate-model></client-certificate-model>
+      <!-- <client-certificate-model></client-certificate-model> -->
     `;
   }
 
@@ -435,7 +475,7 @@ class DemoPage extends ArcDemoPage {
     return html `
       <section class="documentation-section">
         <h2>Usage</h2>
-        <p>Authorization selector comes with 2 predefied styles:</p>
+        <p>Authorization selector comes with 2 predefined styles:</p>
         <ul>
           <li><b>Filled</b> (default)</li>
           <li>
@@ -445,7 +485,7 @@ class DemoPage extends ArcDemoPage {
 
         ${this._singleItemTemplate()}
         ${this._attrForSelectedTemplate()}
-        ${this._customMeythodsTemplate()}
+        ${this._customMethodsTemplate()}
       </section>`;
   }
 
@@ -460,6 +500,5 @@ class DemoPage extends ArcDemoPage {
   }
 }
 
-const instance = new DemoPage();
+const instance = new ComponentDemoPage();
 instance.render();
-window._demo = instance;

@@ -1,7 +1,7 @@
 {
   "name": "@advanced-rest-client/authorization-selector",
   "description": "An element to render single authorization method from a list of defined methods",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "main": "index.js",
   "module": "index.js",
@@ -18,7 +18,7 @@
     "Pawel Psztyc"
   ],
   "contributors": [
-    "The Advanced REST client authors <arc@mulesoft.com>"
+    "Your name can be here!"
   ],
   "repository": {
     "type": "git",
@@ -32,64 +32,77 @@
     "start": "es-dev-server --app-index demo/index.html --node-resolve --open --watch",
     "lint:eslint": "eslint --ext .js,.html . --ignore-path .gitignore",
     "format:eslint": "eslint --ext .js,.html . --fix --ignore-path .gitignore",
-    "lint:prettier": "prettier \"**/*.js\" --check --ignore-path .gitignore",
-    "format:prettier": "prettier \"**/*.js\" --write --ignore-path .gitignore",
-    "lint": "npm run lint:eslint && npm run lint:prettier",
-    "format": "npm run format:eslint && npm run format:prettier",
-    "test": "karma start --coverage",
-    "test:watch": "karma start --auto-watch=true --single-run=false",
-    "test:update-snapshots": "karma start --update-snapshots",
-    "test:prune-snapshots": "karma start --prune-snapshots",
-    "test:bs": "karma start karma.bs.config.js --coverage",
-    "test:sl": "karma start karma.sl.config.js  --compatibility auto --coverage",
-    "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
+    "lint:types": "tsc",
+    "lint": "npm run lint:eslint",
+    "format": "npm run format:eslint",
+    "test": "web-test-runner test/**/*.test.js --coverage --node-resolve --playwright --browsers chromium firefox webkit",
+    "test:watch": "web-test-runner test/**/*.test.js --node-resolve --watch",
+    "gen:wc": "wca analyze \"*.js\" --outFile custom-elements.json"
   },
   "dependencies": {
-    "@anypoint-web-components/anypoint-dropdown-menu": "^0.1.16",
-    "@anypoint-web-components/anypoint-item": "^1.0.7",
-    "@anypoint-web-components/anypoint-listbox": "^1.1.4",
-    "@anypoint-web-components/anypoint-selector": "^1.1.3",
-    "lit-element": "^2.3.1",
-    "lit-html": "^1.2.1"
+    "@anypoint-web-components/anypoint-dropdown-menu": "^0.1.17",
+    "@anypoint-web-components/anypoint-item": "^1.0.8",
+    "@anypoint-web-components/anypoint-listbox": "^1.1.5",
+    "@anypoint-web-components/anypoint-selector": "^1.1.5",
+    "lit-element": "^2.4.0",
+    "lit-html": "^1.3.0"
+  },
+  "peerDependencies": {
+    "cryptojslib": "^3.1.2",
+    "jsrsasign": "^10.0.5"
   },
   "devDependencies": {
-    "@advanced-rest-client/arc-demo-helper": "^1.0.17",
-    "@advanced-rest-client/authorization-method": "^0.1.15",
-    "@advanced-rest-client/eslint-config": "^1.1.5",
-    "@advanced-rest-client/oauth-authorization": "^3.0.2",
-    "@advanced-rest-client/prettier-config": "^0.1.0",
-    "@advanced-rest-client/testing-karma-sl": "^1.3.1",
-    "@anypoint-web-components/anypoint-checkbox": "^1.1.2",
-    "@commitlint/cli": "^8.3.5",
-    "@commitlint/config-conventional": "^8.3.4",
-    "@open-wc/testing": "^2.5.19",
-    "@open-wc/testing-karma": "^3.4.7",
-    "@polymer/gen-typescript-declarations": "^1.6.2",
+    "@advanced-rest-client/arc-demo-helper": "^2.2.0",
+    "@advanced-rest-client/authorization-method": "^0.2.0",
+    "@advanced-rest-client/oauth-authorization": "^5.0.0",
+    "@anypoint-web-components/anypoint-checkbox": "^1.1.3",
+    "@open-wc/eslint-config": "^4.0.1",
+    "@open-wc/testing": "^2.5.32",
     "@polymer/iron-test-helpers": "^3.0.1",
+    "@web/test-runner": "^0.9.7",
+    "@web/test-runner-playwright": "^0.6.4",
     "cryptojslib": "^3.1.2",
-    "es-dev-server": "^1.56.1",
-    "eslint": "^6.8.0",
-    "husky": "^3.1.0",
-    "lint-staged": "^9.5.0",
-    "sinon": "^7.5.0",
-    "webpack-merge": "^4.1.5"
+    "deepmerge": "^4.2.1",
+    "es-dev-server": "^1.57.8",
+    "eslint": "^7.13.0",
+    "eslint-config-prettier": "^6.15.0",
+    "husky": "^4.3.0",
+    "jsrsasign": "^10.0.5",
+    "lint-staged": "^10.5.1",
+    "sinon": "^9.2.1",
+    "typescript": "^4.0.5",
+    "typescript-lit-html-plugin": "^0.9.0"
   },
   "eslintConfig": {
     "extends": [
-      "@advanced-rest-client/eslint-config"
+      "@open-wc/eslint-config",
+      "eslint-config-prettier"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/demo/**/*.js",
+          "**/test/**/*.js",
+          "**/demo/**/*.html"
+        ],
+        "rules": {
+          "no-console": "off",
+          "no-plusplus": "off",
+          "no-unused-expressions": "off",
+          "class-methods-use-this": "off",
+          "import/no-extraneous-dependencies": "off"
+        }
+      }
     ]
   },
-  "prettier": "@advanced-rest-client/prettier-config",
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
     "*.js": [
-      "eslint --fix",
-      "git add"
+      "eslint --fix"
     ]
   }
 }

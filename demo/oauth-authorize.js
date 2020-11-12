@@ -5,7 +5,7 @@ import '@anypoint-web-components/anypoint-input/anypoint-masked-input.js';
 function setupFormAction() {
   const u = new URL(location.href)
   const state = u.searchParams.get('state');
-  const redirectUri = decodeURIComponent(u.searchParams.get('redirect_uri'));
+  const redirectUri = u.searchParams.get('redirect_uri');
   let formUrl = redirectUri;
   formUrl += `#access_token=MyMzFjNTk2NTk4ZTYyZGI3`;
   formUrl += `&state=${state}`;
