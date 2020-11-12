@@ -5,12 +5,22 @@ import '@advanced-rest-client/authorization-method/authorization-method.js';
 import { nodeToLabel } from '../src/AuthorizationSelector.js';
 import '../authorization-selector.js';
 import './custom-method.js';
+import { dropdownSelected, dropdownValue, notifyChange } from '../src/AuthorizationSelector.js';
+
+/** @typedef {import('../index').AuthorizationSelector} AuthorizationSelector */
 
 describe('authorization-selector', function() {
+  /**
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function basicFixture() {
-    return (await fixture(html`<authorization-selector></authorization-selector>`));
+    return fixture(html`<authorization-selector></authorization-selector>`);
   }
 
+  /**
+   * @param {number=} selected
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function methodsFixture(selected) {
     return (await fixture(html`<authorization-selector .selected="${selected}">
       <authorization-method type="basic"></authorization-method>
@@ -18,12 +28,19 @@ describe('authorization-selector', function() {
     </authorization-selector>`));
   }
 
+  /**
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function singleFixture() {
     return (await fixture(html`<authorization-selector>
       <authorization-method type="basic"></authorization-method>
     </authorization-selector>`));
   }
 
+  /**
+   * @param {string=} selected
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function attrForSelectedFixture(selected) {
     return (await fixture(html`<authorization-selector .selected="${selected}" attrforselected="type">
       <authorization-method type="basic"></authorization-method>
@@ -31,8 +48,12 @@ describe('authorization-selector', function() {
     </authorization-selector>`));
   }
 
+  /**
+   * @param {string|number=} selected
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function customFixture(selected) {
-    return (await fixture(html`<authorization-selector .selected="${selected}" attrforlabel="data-label">
+    return (await fixture(html`<authorization-selector .selected="${selected}" attrForLabel="data-label">
       <authorization-method type="basic"></authorization-method>
       <div type="noop-custom"></div>
       <custom-auth-method type="test-custom" data-label="Test custom"></custom-auth-method>
@@ -40,8 +61,11 @@ describe('authorization-selector', function() {
     </authorization-selector>`));
   }
 
+  /**
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function labelsFixture() {
-    return (await fixture(html`<authorization-selector attrforlabel="data-label">
+    return (await fixture(html`<authorization-selector attrForLabel="data-label">
       <authorization-method type="basic"></authorization-method>
       <authorization-method type="basic" data-label="Test Basic"></authorization-method>
       <custom-auth-method type="test-custom" data-label="Test Custom"></custom-auth-method>
@@ -50,6 +74,10 @@ describe('authorization-selector', function() {
     </authorization-selector>`));
   }
 
+  /**
+   * @param {string|number=} selected
+   * @returns {Promise<AuthorizationSelector>}
+   */
   async function authorizeFixture(selected) {
     return (await fixture(html`<authorization-selector .selected="${selected}">
       <authorization-method type="basic"></authorization-method>
@@ -70,7 +98,7 @@ describe('authorization-selector', function() {
   });
 
   describe('#selectable', () => {
-    let element;
+    let element = /** @type AuthorizationSelector */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
@@ -107,7 +135,7 @@ describe('authorization-selector', function() {
       assert.isTrue(element.querySelector('[type=ntlm]').hasAttribute('hidden'));
     });
 
-    it('automatically selects signle authorization method', async () => {
+    it('automatically selects single authorization method', async () => {
       const element = await singleFixture();
       assert.equal(element.selected, 0);
     });
@@ -141,7 +169,7 @@ describe('authorization-selector', function() {
 
     it('sets dropdown selection index', async () => {
       const element = await attrForSelectedFixture('ntlm');
-      assert.equal(element._dropdownSelected, 1);
+      assert.equal(element[dropdownSelected], 1);
     });
   });
 
@@ -153,6 +181,7 @@ describe('authorization-selector', function() {
       element.appendChild(node);
       await nextFrame();
       assert.lengthOf(element.items, 3, 'new child is detected');
+      // @ts-ignore
       assert.equal(element.items[2].type, 'oauth 1', 'new child is inserted in the right position');
       const options = element.shadowRoot.querySelectorAll('anypoint-item[data-label]');
       assert.lengthOf(options, 3, 'has 3 options in the selector');
@@ -174,8 +203,8 @@ describe('authorization-selector', function() {
       element.removeChild(node);
       await nextFrame();
       assert.isUndefined(element.selected, 'selected is undefined');
-      assert.isUndefined(element._dropdownSelected, '_dropdownSelected is undefined');
-      assert.notOk(element._dropdown._selectedItem, '_selectedItem on the dropdown is undefined');
+      assert.isUndefined(element[dropdownSelected], '_dropdownSelected is undefined');
+      assert.notOk(element[dropdownValue]._selectedItem, '_selectedItem on the dropdown is undefined');
     });
 
     it('keeps selection when removed node is not selected', async () => {
@@ -193,18 +222,18 @@ describe('authorization-selector', function() {
       assert.lengthOf(element.items, 3, 'has all recognized methods')
     });
 
-    it('accepts label defined on a cutom method', async () => {
+    it('accepts label defined on a custom method', async () => {
       const element = await customFixture();
       const option = element.shadowRoot.querySelector('anypoint-item[data-label="Test custom"]');
       assert.ok(option);
     });
 
-    it('selects cutom method', async () => {
+    it('selects custom method', async () => {
       const element = await customFixture(2);
       assert.isFalse(element.querySelector('[type=test-custom]').hasAttribute('hidden'));
     });
 
-    it('selects cutom method (native element)', async () => {
+    it('selects custom method (native element)', async () => {
       const element = await customFixture(1);
       assert.isFalse(element.querySelector('[type=noop-custom]').hasAttribute('hidden'));
     });
@@ -244,20 +273,23 @@ describe('authorization-selector', function() {
 
   describe('nodeToLabel()', () => {
     it('returns empty string when no node', () => {
-      const result = nodeToLabel();
+      const result = nodeToLabel(undefined);
       assert.equal(result, '');
     });
 
     it('returns attribute value for attrForLabel', () => {
       const node = document.createElement('p');
       node.setAttribute('test-label', 'test-value');
+      // @ts-ignore
       const result = nodeToLabel(node, 'test-label');
       assert.equal(result, 'test-value');
     });
 
     it('returns the same "type" property value', () => {
       const node = document.createElement('p');
+      // @ts-ignore
       node.type = 'test-type-property';
+      // @ts-ignore
       const result = nodeToLabel(node);
       assert.equal(result, 'test-type-property');
     });
@@ -265,13 +297,16 @@ describe('authorization-selector', function() {
     it('returns the same "type" attribute value', () => {
       const node = document.createElement('p');
       node.setAttribute('type', 'test-type-attribute');
+      // @ts-ignore
       const result = nodeToLabel(node);
       assert.equal(result, 'test-type-attribute');
     });
 
     it('returns the "type" property when attrForLabel is not in the passed node', () => {
       const node = document.createElement('p');
+      // @ts-ignore
       node.type = 'test-type';
+      // @ts-ignore
       const result = nodeToLabel(node, 'test-label');
       assert.equal(result, 'test-type');
     });
@@ -287,7 +322,9 @@ describe('authorization-selector', function() {
     ].forEach(([type, label]) => {
       it(`returns mapped value for ${type}`, () => {
         const node = document.createElement('p');
+        // @ts-ignore
         node.type = type;
+        // @ts-ignore
         const result = nodeToLabel(node);
         assert.equal(result, label);
       });
@@ -312,7 +349,7 @@ describe('authorization-selector', function() {
   });
 
   describe('onchange', () => {
-    let element;
+    let element = /** @type AuthorizationSelector */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
@@ -330,7 +367,7 @@ describe('authorization-selector', function() {
         called = true;
       };
       element.onchange = f;
-      element._notifyChange();
+      element[notifyChange]();
       element.onchange = null;
       assert.isTrue(called);
     });
@@ -346,7 +383,7 @@ describe('authorization-selector', function() {
       };
       element.onchange = f1;
       element.onchange = f2;
-      element._notifyChange();
+      element[notifyChange]();
       element.onchange = null;
       assert.isFalse(called1);
       assert.isTrue(called2);
@@ -408,8 +445,8 @@ describe('authorization-selector', function() {
 
     it('returns result of calling authorize function on selected item', async () => {
       const element = await authorizeFixture(1);
-      const result = element.authorize();
-      assert.isFalse(result); // result of calling authorize() on invalid oauth 2
+      const result = await element.authorize();
+      assert.equal(result, null); // result of calling authorize() on invalid oauth 2
     });
   });
 
@@ -448,7 +485,7 @@ describe('authorization-selector', function() {
       assert.isTrue(spy.called);
     });
 
-    it('retargets event from method', async () => {
+    it('re-targets event from method', async () => {
       const element = await methodsFixture(0); // basic
       const spy = sinon.spy();
       element.addEventListener('change', spy);
