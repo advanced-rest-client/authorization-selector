@@ -108,3 +108,28 @@
 * upgrading to ARC types [3055f67](https://github.com/advanced-rest-client/authorization-selector/commit/3055f67ff514d8ff19783239c5dcd9c14e16302c) by Pawel
 
 
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/advanced-rest-client/authorization-selector/compare/0.1.2...0.2.1) (2020-11-12)
+
+### Update
+
+* [ci skip] automated merge master->stage. syncing main branches [779775e](https://github.com/advanced-rest-client/authorization-selector/commit/779775e837f6931ea0fd6af729ab002a2f397b31) by Ci agent
+* [ci skip] automated merge master->stage. syncing main branches [1144bb5](https://github.com/advanced-rest-client/authorization-selector/commit/1144bb583e6a7976ad480b26ddaa4bfa9663f394) by Ci agent
+
+
+### Features
+
+* adding horizontal view and docs [36f6263](https://github.com/advanced-rest-client/authorization-selector/commit/36f626379df1203b54e421ee22c05611756828df) by Pawel
+
+
+### Bug Fixes
+
+* renaming main class name [58c4049](https://github.com/advanced-rest-client/authorization-selector/commit/58c4049b011ec5146351245d8265440777f90c93) by Pawel
+* fixing types for HTML element [18560cd](https://github.com/advanced-rest-client/authorization-selector/commit/18560cd9dadebb4f9ab4d29a8518680af63a8b8f) by Pawel
+
+
+### Refactor
+
+* upgrading to ARC types [3055f67](https://github.com/advanced-rest-client/authorization-selector/commit/3055f67ff514d8ff19783239c5dcd9c14e16302c) by Pawel
+
+
