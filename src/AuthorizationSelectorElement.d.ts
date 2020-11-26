@@ -1,6 +1,6 @@
 import { AuthorizationMethod } from "@advanced-rest-client/authorization-method";
 import { AnypointDropdownMenu } from "@anypoint-web-components/anypoint-dropdown-menu";
-import { AnypointSelectableMixin } from "@anypoint-web-components/anypoint-selector/anypoint-selectable-mixin";
+import { MultiSelectableMixin } from "@anypoint-web-components/anypoint-selector";
 import { CSSResult, LitElement, TemplateResult } from "lit-element";
 
 export declare const dropdownSelected: unique symbol;
@@ -17,7 +17,11 @@ export declare const removeItemsListeners: unique symbol;
 export declare const addItemsListeners: unique symbol;
 export declare const ensureSingleSelection: unique symbol;
 export declare const selectionHandler: unique symbol;
+export declare const itemsHandler: unique symbol;
 export declare const processDocs: unique symbol;
+export declare const multiEnabledHandler: unique symbol;
+export declare const multiEnabledClickHandler: unique symbol;
+export declare const readAuthType: unique symbol;
 
 /**
  * A function that maps a value of the `type` attribute of an authorization method
@@ -36,11 +40,11 @@ export declare function nodeToLabel(node: AuthorizationMethod, attrForLabel?: st
  * @slot - Authorization method to be rendered. Must have `type` attribute to be rendered.
  * @slot aria - For description of the selected method. Recognized by `aria-describedby` property of the auth method
  */
-export declare class AuthorizationSelectorElement extends AnypointSelectableMixin(LitElement) {
+export declare class AuthorizationSelectorElement extends MultiSelectableMixin(LitElement) {
   get styles(): CSSResult;
   get [dropdownValue](): AnypointDropdownMenu;
   onchange: EventListener;
-  get type(): string|null;
+  get type(): string|string[]|null;
   selectable: string;
 
   /**
@@ -80,15 +84,6 @@ export declare class AuthorizationSelectorElement extends AnypointSelectableMixi
   firstUpdated(): void;
 
   /**
-   * Calls `serialize()` function on currently selected authorization method.
-   *
-   * @returns Result of calling `serialize()` function on selected
-   * method or `null` if no selection or selected method does not implement this
-   * function.
-   */
-  serialize(): any|null;
-
-  /**
    * Calls `validate()` function on currently selected authorization method.
    *
    * @returns Result of calling `validate()` function on selected
@@ -98,27 +93,10 @@ export declare class AuthorizationSelectorElement extends AnypointSelectableMixi
   validate(): boolean;
 
   /**
-   * Calls `authorize()` function on currently selected authorization method.
-   *
-   * @returns Result of calling `authorize()` function on selected
-   * method or `null` if no selection or selected method does not implement this
-   * function.
-   */
-  authorize(): any|null;
-
-  /**
-   * Calls `serialize()` function on currently selected authorization method.
-   *
-   * Note, this function quits quietly when there's no selection or when selected
-   * method does not implement the `restore()` function
-   */
-  restore(values: any): void;
-
-  /**
    * A handler for `items-changed` event dispatched by the selectable mixin.
    * It manages selection state when items changed.
    */
-  _itemsHandler(): void;
+  [itemsHandler](): void;
 
   /**
    * Handler for `selected-changed` event dispatched by the selectable mixin.
@@ -200,6 +178,15 @@ export declare class AuthorizationSelectorElement extends AnypointSelectableMixi
    * the ARIA attribute, and if so then it renders it in the slot.
    */
   [processDocs](): void;
+
+  [multiEnabledClickHandler](e: Event): void;
+
+  [multiEnabledHandler](e: Event): void;
+
+  /**
+   * @param item The element to read the value from
+   */
+  [readAuthType](item: AuthorizationMethod): string|null;
 
   render(): TemplateResult;
   [methodSelectorTemplate](): TemplateResult|string;

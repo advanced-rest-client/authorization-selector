@@ -8,7 +8,13 @@ import '@anypoint-web-components/anypoint-checkbox/anypoint-checkbox.js'
 import '../authorization-selector.js';
 import './custom-method.js';
 
-const STORE_KEY = 'auth-selector-config';
+/** @typedef {import('@advanced-rest-client/arc-types').ArcRequest.RequestAuthorization} RequestAuthorization */
+/** @typedef {import('../index').AuthorizationSelectorElement} AuthorizationSelectorElement */
+/** @typedef {import('@advanced-rest-client/authorization-method').AuthorizationMethod} AuthorizationMethod */
+
+
+const STORE_KEY = 'demo.auth-selector.config';
+const SELECTED_KEY = 'demo.auth-selector.selected';
 
 class ComponentDemoPage extends DemoPage {
   constructor() {
@@ -20,13 +26,21 @@ class ComponentDemoPage extends DemoPage {
       'changeCounter',
       'allowNone',
       'horizontal',
+      'multi',
+      'selected',
     ]);
     this._componentName = 'authorization-selector';
     this.demoStates = ['Filled', 'Outlined', 'Anypoint'];
     this.demoState = 0;
     this.changeCounter = 0;
+    this.selected = 0;
     this.allowNone = false;
-    this.horizontal = false;
+    this.horizontal = true;
+    this.multi = true;
+    /**
+     * @type {number[]}
+     */
+    this.enabled = [];
 
     const base = `${location.protocol}//${location.host}`;
     this.authorizationUri = `${base}${location.pathname}oauth-authorize.html`;
@@ -46,15 +60,28 @@ class ComponentDemoPage extends DemoPage {
   }
 
   _restoreConfig() {
+    const selectedRaw = localStorage[SELECTED_KEY];
+    const selected = Number(selectedRaw);
+    if (!Number.isNaN(selected)) {
+      this.selected = selected;
+    }
     const data = localStorage[STORE_KEY];
     if (!data) {
       return;
     }
-    if (data[0] !== '{') {
+    if (data[0] !== '[') {
       return;
     }
     try {
       this.authConfiguration = JSON.parse(data);
+      this.enabled = [];
+      (this.authConfiguration || []).forEach((item, index) => {
+        if (item.enabled) {
+          this.enabled.push(index);
+        }
+      });
+      console.log(this.authConfiguration);
+      console.log(this.enabled);
     } catch (_) {
       // ..
     }
@@ -73,19 +100,34 @@ class ComponentDemoPage extends DemoPage {
     this._updateCompatibility();
   }
 
+  /**
+   * @param {Event} e 
+   */
   _mainChangeHandler(e) {
     this.changeCounter++;
-    const { selected, type } = e.target;
-    const config = e.target.serialize();
-
-    this.authConfiguration = {
-      selected,
-      config,
-      type,
-    };
-
+    const selector = /** @type AuthorizationSelectorElement */ (e.target);
+    const { selected, type, multi } = selector;
+    const methods = /** @type AuthorizationMethod[] */ (selector.items);
+    const result = /** @type RequestAuthorization[] */ ([]);
+    this.enabled = [];
+    methods.forEach((authMethod, index) => {
+      const { type: mType } = authMethod;
+      const config = (authMethod && authMethod.serialize) ? authMethod.serialize() : undefined;
+      const enabled = multi ? type.includes(mType) : type === mType;
+      if (enabled) {
+        this.enabled.push(index);
+      }
+      result.push({
+        config,
+        type: mType,
+        enabled,
+      });
+    });
+    // console.log(result);
+    this.authConfiguration = result;
     const storeValue = JSON.stringify(this.authConfiguration);
     localStorage[STORE_KEY] = storeValue;
+    localStorage[SELECTED_KEY] = selected;
 
     this._printEventChangeValues(e);
   }
@@ -96,10 +138,10 @@ class ComponentDemoPage extends DemoPage {
 
   _printEventChangeValues(e) {
     const { selected, type } = e.target;
-    const config = e.target.serialize();
+    // const config = e.target.serialize();
     const valid = e.target.validate();
     console.log('selected:', selected, 'type:', type, 'valid:', valid);
-    console.log(config);
+    // console.log(config);
   }
 
   _basicTemplate(config={}) {
@@ -293,6 +335,36 @@ class ComponentDemoPage extends DemoPage {
     `;
   }
 
+  _bearerTemplate(config={}) {
+    const {
+      compatibility,
+      outlined,
+    } = this;
+    const { token } = config.config || {};
+    return html`<authorization-method
+      ?compatibility="${compatibility}"
+      ?outlined="${outlined}"
+      type="bearer"
+      .token="${token}"
+      aria-describedby="tokenDesc"
+    ></authorization-method>
+    <p id="tokenDesc" slot="aria">
+      Bearer authorization allows to send an authentication token in the authorization header using the "bearer" method.
+    </p>`;
+  }
+
+  /**
+   * @param {RequestAuthorization[]} config
+   * @param {string} type
+   * @param {RequestAuthorization|undefined}
+   */
+  readConfiguration(config, type) {
+    if (!Array.isArray(config) || !config.length) {
+      return undefined;
+    }
+    return config.find((cnf) => cnf.type === type);
+  }
+
   _demoTemplate() {
     const {
       demoStates,
@@ -303,8 +375,9 @@ class ComponentDemoPage extends DemoPage {
       changeCounter,
       authConfiguration,
       horizontal,
+      multi,
+      selected,
     } = this;
-    const selected = authConfiguration ? authConfiguration.selected : undefined;
     return html`
       <section class="documentation-section">
         <h3>Interactive demo</h3>
@@ -325,13 +398,16 @@ class ComponentDemoPage extends DemoPage {
             @change="${this._mainChangeHandler}"
             .selected="${selected}"
             ?horizontal="${horizontal}"
+            ?multi="${multi}"
+            .selectedValues="${multi ? this.enabled : undefined}"
           >
             ${this._noneTemplate()}
-            ${this._basicTemplate(authConfiguration)}
-            ${this._ntlmTemplate(authConfiguration)}
-            ${this._digestTemplate(authConfiguration)}
-            ${this._oa1Template(authConfiguration)}
-            ${this._oa2Template(authConfiguration)}
+            ${this._basicTemplate(this.readConfiguration(authConfiguration, 'basic'))}
+            ${this._bearerTemplate(this.readConfiguration(authConfiguration, 'bearer'))}
+            ${this._ntlmTemplate(this.readConfiguration(authConfiguration, 'ntlm'))}
+            ${this._digestTemplate(this.readConfiguration(authConfiguration, 'digest'))}
+            ${this._oa1Template(this.readConfiguration(authConfiguration, 'oauth 1'))}
+            ${this._oa2Template(this.readConfiguration(authConfiguration, 'oauth 2'))}
           </authorization-selector>
 
           <label slot="options" id="mainOptionsLabel">Options</label>
@@ -345,8 +421,16 @@ class ComponentDemoPage extends DemoPage {
             aria-describedby="mainOptionsLabel"
             slot="options"
             name="horizontal"
+            .checked="${horizontal}"
             @change="${this._toggleMainOption}"
-          >Horizontal"</anypoint-checkbox>
+          >Horizontal</anypoint-checkbox>
+          <anypoint-checkbox
+            aria-describedby="mainOptionsLabel"
+            slot="options"
+            name="multi"
+            .checked="${multi}"
+            @change="${this._toggleMainOption}"
+          >Multi</anypoint-checkbox>
         </arc-interactive-demo>
         <p>Change event dispatched ${changeCounter} time(s)</p>
       </section>

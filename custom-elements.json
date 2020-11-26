@@ -26,6 +26,11 @@
           "type": "boolean"
         },
         {
+          "name": "multi",
+          "description": "If true, multiple selections are allowed.",
+          "type": "boolean | undefined"
+        },
+        {
           "name": "attrForSelected",
           "description": "If you want to use an attribute value or property of an element for\n`selected` instead of the index, set this to the name of the attribute\nor property. Hyphenated values are converted to camel case when used to\nlook up the property of a selectable element. Camel cased values are\n*not* converted to hyphenated values for attribute lookup. It's\nrecommended that you provide the hyphenated form of the name so that\nselection works in both cases. (Use `attr-or-property-name` instead of\n`attrOrPropertyName`.)",
           "type": "string"
@@ -74,7 +79,7 @@
         },
         {
           "name": "type",
-          "type": "string | null"
+          "type": "string | string[] | null"
         },
         {
           "name": "outlined",
@@ -99,6 +104,42 @@
           "attribute": "horizontal",
           "description": "When set it renders the authorization form next to the drop down.\nUse this when there's enough screen to render the form.",
           "type": "boolean"
+        },
+        {
+          "name": "multi",
+          "attribute": "multi",
+          "description": "If true, multiple selections are allowed.",
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "selectedValues",
+          "description": "Gets or sets the selected elements. This is used instead of `selected`\nwhen `multi` is true.",
+          "type": "HTMLElement[]"
+        },
+        {
+          "name": "selectedItems",
+          "description": "An array of currently selected items.",
+          "type": "array"
+        },
+        {
+          "name": "onselectedvalueschanged",
+          "description": "Registers a callback function for `selectedvalues-changed` event",
+          "type": "EventListener | null"
+        },
+        {
+          "name": "onselectedvalueschange",
+          "description": "Registers a callback function for `selectedvalueschange` event",
+          "type": "EventListener | null"
+        },
+        {
+          "name": "onselecteditemschanged",
+          "description": "Registers a callback function for `selecteditems-changed` event",
+          "type": "EventListener | null"
+        },
+        {
+          "name": "onselecteditemschange",
+          "description": "Registers a callback function for `selecteditemschange` event",
+          "type": "EventListener | null"
         },
         {
           "name": "attrForSelected",
@@ -156,23 +197,28 @@
         },
         {
           "name": "onselectedchanged",
-          "type": "EventListener"
+          "type": "EventListener",
+          "deprecated": true
         },
         {
           "name": "onselectedchange",
-          "type": "EventListener"
+          "type": "EventListener",
+          "deprecated": true
         },
         {
           "name": "onselecteditemchanged",
-          "type": "EventListener"
+          "type": "EventListener",
+          "deprecated": true
         },
         {
           "name": "onselecteditemchange",
-          "type": "EventListener"
+          "type": "EventListener",
+          "deprecated": true
         },
         {
           "name": "onitemschanged",
-          "type": "EventListener"
+          "type": "EventListener",
+          "deprecated": true
         },
         {
           "name": "onitemschange",
@@ -188,6 +234,10 @@
         },
         {
           "name": "onactivate",
+          "type": "EventListener"
+        },
+        {
+          "name": "onselected",
           "type": "EventListener"
         }
       ],
@@ -215,13 +265,20 @@
           "name": "itemschange"
         },
         {
-          "name": "select"
+          "name": "select",
+          "description": "When an item is selected. This also is dispatched when the `selected` property is set."
         },
         {
-          "name": "deselect"
+          "name": "deselect",
+          "description": "When an item is deselected. This also is dispatched when the `selected` property is set."
         },
         {
-          "name": "activate"
+          "name": "activate",
+          "description": "When an item is about to be selected. Cancelling this event cancels the selection."
+        },
+        {
+          "name": "selected",
+          "description": "This is dispatched only through user interaction (the activateEvent). Dispatched after the `select` event."
         }
       ],
       "slots": [

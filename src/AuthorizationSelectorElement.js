@@ -1,13 +1,17 @@
+/* eslint-disable lit-a11y/click-events-have-key-events */
 /* eslint-disable no-plusplus */
 /* eslint-disable class-methods-use-this */
 import { html, LitElement } from 'lit-element';
-import { AnypointSelectableMixin } from '@anypoint-web-components/anypoint-selector/anypoint-selectable-mixin.js';
+import { MultiSelectableMixin } from '@anypoint-web-components/anypoint-selector';
 import '@anypoint-web-components/anypoint-dropdown-menu/anypoint-dropdown-menu.js';
 import '@anypoint-web-components/anypoint-listbox/anypoint-listbox.js';
 import '@anypoint-web-components/anypoint-item/anypoint-item.js';
+import '@anypoint-web-components/anypoint-item/anypoint-icon-item.js';
+import '@anypoint-web-components/anypoint-switch/anypoint-switch.js';
 import styles from './Styles.js';
 
 const selectable = '[type]';
+
 export const dropdownSelected = Symbol('dropdownSelected');
 export const updateSelectionState = Symbol('updateSelectionState');
 export const activateDropdownHandler = Symbol('activateDropdownHandler');
@@ -24,9 +28,14 @@ export const ensureSingleSelection = Symbol('ensureSingleSelection');
 export const selectionHandler = Symbol('selectionHandler');
 export const itemsHandler = Symbol('itemsHandler');
 export const processDocs = Symbol('processDocs');
+export const multiEnabledHandler = Symbol('multiEnabledHandler');
+export const multiEnabledClickHandler = Symbol('multiEnabledClickHandler');
+export const readAuthType = Symbol('readAuthType');
 
 /** @typedef {import('@advanced-rest-client/authorization-method').AuthorizationMethod} AuthorizationMethod */
 /** @typedef {import('@anypoint-web-components/anypoint-dropdown-menu').AnypointDropdownMenu} AnypointDropdownMenu */
+/** @typedef {import('@anypoint-web-components/anypoint-listbox').AnypointListbox} AnypointListbox */
+/** @typedef {import('@anypoint-web-components/anypoint-switch').AnypointSwitch} AnypointSwitch */
 /** @typedef {import('lit-element').TemplateResult} TemplateResult */
 
 /**
@@ -59,13 +68,22 @@ export const nodeToLabel = (node, attrForLabel) => {
     case 'digest': return 'Digest';
     case 'oauth 1': return 'OAuth 1';
     case 'oauth 2': return 'OAuth 2';
+    case 'bearer': return 'Bearer';
     case 'client certificate': return 'Client certificate';
     default:
   }
   return type;
 };
 
-export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitElement) {
+/**
+ * 
+ * @param {Event} e 
+ */
+function stopPropagation(e) {
+  e.stopPropagation();
+}
+
+export class AuthorizationSelectorElement extends MultiSelectableMixin(LitElement) {
   get styles() {
     return [
       styles,
@@ -101,19 +119,15 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   }
 
   /**
-   * @return {String|null} A type attribute value of selected authorization method.
+   * @return {string|string[]|null} A type attribute value of selected authorization method.
    */
   get type() {
+    if (this.multi) {
+      const items = /** @type AuthorizationMethod[] */ (this.selectedItems);
+      return items.map((item) => this[readAuthType](item)).filter((item) => !!item);
+    }
     const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    if (!selected) {
-      return null;
-    }
-    if (selected.type) {
-      return selected.type;
-    }
-    // because [type] is the only selectable children this has to have
-    // `type` attribute
-    return selected.getAttribute('type');
+    return this[readAuthType](selected);
   }
 
   get selectable() {
@@ -122,6 +136,24 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
 
   set selectable(value) {
     // simply ignore it.
+  }
+
+  get selected() {
+    return this._selected;
+  }
+
+  set selected(value) {
+    const old = this._selected;
+    /* istanbul ignore if */
+    if (old === value) {
+      return;
+    }
+    this._selected = value;
+    if (!this.multi) {
+      this._updateSelected();
+    }
+    this.requestUpdate();
+    this[selectionHandler]();
   }
 
   static get properties() {
@@ -152,7 +184,6 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   constructor() {
     super();
     this[itemsHandler] = this[itemsHandler].bind(this);
-    this[selectionHandler] = this[selectionHandler].bind(this);
     this[methodChange] = this[methodChange].bind(this);
 
     /**
@@ -168,6 +199,7 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
     this.compatibility = false;
     this.outlined = false;
     this.horizontal = false;
+    this.multi = false;
     /**
      * @type {string}
      */
@@ -177,7 +209,6 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener('items-changed', this[itemsHandler]);
-    this.addEventListener('selected-changed', this[selectionHandler]);
     this[updateSelectionState]();
     if (this.attrForSelected) {
       this[selectionHandler]();
@@ -187,7 +218,6 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener('items-changed', this[itemsHandler]);
-    this.removeEventListener('selected-changed', this[selectionHandler]);
   }
 
   firstUpdated() {
@@ -202,51 +232,19 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   }
   
   /**
-   * Calls `serialize()` function on currently selected authorization method.
-   * @return {any|null} Result of calling `serialize()` function on selected
-   * method or `null` if no selection or selected method does not implement this
-   * function.
-   */
-  serialize() {
-    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    return selected && selected.serialize ? selected.serialize() : null;
-  }
-
-  /**
    * Calls `validate()` function on currently selected authorization method.
    * @return {Boolean|null} Result of calling `validate()` function on selected
    * method or `null` if no selection or selected method does not implement this
    * function.
    */
   validate() {
-    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    return selected && selected.validate ? selected.validate() : true;
-  }
-
-  /**
-   * Calls `authorize()` function on currently selected authorization method.
-   * @return {any} Result of calling `authorize()` function on selected
-   * method or `null` if no selection or selected method does not implement this
-   * function.
-   */
-  authorize() {
-    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    return selected && selected.authorize ? selected.authorize() : null;
-  }
-
-  /**
-   * Calls `serialize()` function on currently selected authorization method.
-   *
-   * Note, this function quits quietly when there's no selection or when selected
-   * method does not implement the `restore()` function
-   *
-   * @param {any} values
-   */
-  restore(values) {
-    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    if (selected && selected.restore) {
-      selected.restore(values);
+    let items = /** @type AuthorizationMethod[] */ ([]);
+    if (this.multi) {
+      items = this.selectedItems;
+    } else {
+      items.push(/** @type AuthorizationMethod */ (this.selectedItem));
     }
+    return !items.some((auth) => auth && auth.validate ? !auth.validate() : false);
   }
 
   /**
@@ -267,7 +265,6 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
   [selectionHandler]() {
     this[updateSelectionState]();
     this[processDocs]();
-    this._selectSelected(this.selected);
     this[dropdownSelected] = this._valueToIndex(this.selected);
   }
 
@@ -281,8 +278,10 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
    * @param {CustomEvent} e
    */
   [selectedDropdownHandler](e) {
-    this.selected = this._indexToValue(e.detail.value);
+    const node = /** @type AnypointListbox */ (e.target);
+    this.selected = this._indexToValue(/** @type number */ (node.selected));
     this[notifyChange]();
+    this.requestUpdate();
   }
 
   /**
@@ -328,7 +327,9 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
     if (items.length === 0 || items.length > 1) {
       return;
     }
-    this.selected = this._indexToValue(0);
+    const selected = this._indexToValue(0);
+    this.select(selected);
+    this.selected = selected;
     this[dropdownSelected] = 0;
     this[selectionHandler]();
   }
@@ -371,6 +372,7 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
       const candidate = /** @type AuthorizationMethod */ (nodesList[i]);
       const { type } = candidate;
       if (type && nodeToLabel(candidate, attrForLabel) === value) {
+        this.select(undefined);
         this.selected = undefined;
         dropdown._selectedItem = undefined;
         this[dropdownSelected] = undefined;
@@ -432,16 +434,66 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
     if (slotted.length === 0) {
       return;
     }
-    const selected = /** @type AuthorizationMethod */ (this.selectedItem);
-    if (!selected) {
+    const { selected } = this;
+    const selectedItem = /** @type AuthorizationMethod */ (this.items[selected]);
+    if (!selectedItem) {
       slotted.forEach((node) => node.setAttribute('hidden', ''));
       return;
     }
-    const id = selected.getAttribute('aria-describedby');
+    const id = selectedItem.getAttribute('aria-describedby');
     slotted.forEach((node) => {
       const ariaId = node.getAttribute('id');
       node.toggleAttribute('hidden', ariaId !== id);
     });
+  }
+
+  /**
+   * @param {Event} e 
+   */
+  [multiEnabledClickHandler](e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  /**
+   * @param {Event} e 
+   */
+  [multiEnabledHandler](e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const node = /** @type AnypointSwitch */ (e.target);
+    const selected = Number(this._indexToValue(Number(node.dataset.index)));
+    if (Number.isNaN(selected)) {
+      return;
+    }
+    const { selectedValues } = this;
+    const isSelected = selectedValues.includes(selected);
+    if (isSelected && !node.checked) {
+      const index = selectedValues.indexOf(selected);
+      selectedValues.splice(index, 1);
+    } else if (!isSelected && node.checked) {
+      selectedValues.push(selected);
+    } else {
+      return;
+    }
+    this.selectedValues = [...selectedValues];
+    this[notifyChange]();
+  }
+
+  /**
+   * @param {AuthorizationMethod} item The element to read the value from
+   * @returns {string|null}
+   */
+  [readAuthType](item) {
+    if (!item) {
+      return null;
+    }
+    if (item.type) {
+      return item.type;
+    }
+    // because [type] is the only selectable children this has to have
+    // `type` attribute
+    return item.getAttribute('type');
   }
 
   render() {
@@ -452,7 +504,7 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
         ${this[methodSelectorTemplate]()}
         <slot name="aria"></slot>
       </div>
-      <div class="auth">
+      <div class="auth" @click="${stopPropagation}">
         <slot></slot>
       </div>
     </div>
@@ -474,17 +526,19 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
       aria-label="Activate to select authorization method"
       ?compatibility="${compatibility}"
       ?outlined="${outlined}"
+      fitPositionTarget
     >
       <label slot="label">Select authorization</label>
       <anypoint-listbox
         slot="dropdown-content"
         tabindex="-1"
         .selected="${selected}"
-        @selected-changed="${this[selectedDropdownHandler]}"
+        @selected="${this[selectedDropdownHandler]}"
         @activate="${this[activateDropdownHandler]}"
         ?compatibility="${compatibility}"
+        class="auth-listbox"
       >
-        ${children.map((item) => this[dropdownItemTemplate](item))}
+        ${children.map((item, index) => this[dropdownItemTemplate](item, index))}
       </anypoint-listbox>
     </anypoint-dropdown-menu>
     `;
@@ -492,11 +546,26 @@ export class AuthorizationSelectorElement extends AnypointSelectableMixin(LitEle
 
   /**
    * @param {AuthorizationMethod} item The child element
+   * @param {number} index The index of the item in the `items` array.
    * @returns {TemplateResult} The template for the drop down item.
    */
-  [dropdownItemTemplate](item) {
-    const { compatibility, attrForLabel } = this;
+  [dropdownItemTemplate](item, index) {
+    const { compatibility, attrForLabel, multi, selectedValues } = this;
     const label = nodeToLabel(item, attrForLabel)
+    if (multi) {
+      const checked = selectedValues.includes(index);
+      return html`
+      <anypoint-icon-item ?compatibility="${compatibility}">
+        <anypoint-switch 
+          slot="item-icon" 
+          .checked="${checked}"
+          @click="${this[multiEnabledClickHandler]}" 
+          @change="${this[multiEnabledHandler]}" 
+          data-index="${index}"
+        ></anypoint-switch> 
+        ${label}
+      </anypoint-icon-item>`;
+    }
     return html`
     <anypoint-item
       data-label="${label}"

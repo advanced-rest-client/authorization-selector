@@ -403,26 +403,6 @@ describe('authorization-selector', () => {
     });
   });
 
-  describe('serialize()', () => {
-    it('returns null when no selection', async () => {
-      const element = await customFixture();
-      const result = element.serialize();
-      assert.strictEqual(result, null);
-    });
-
-    it('returns null when no serialize function on selected item', async () => {
-      const element = await customFixture(1);
-      const result = element.serialize();
-      assert.strictEqual(result, null);
-    });
-
-    it('returns result of calling serialize function on selected item', async () => {
-      const element = await customFixture(0);
-      const result = element.serialize();
-      assert.deepEqual(result, { username: '', password: '' });
-    });
-  });
-
   describe('validate()', () => {
     it('returns true when no selection', async () => {
       const element = await customFixture();
@@ -440,51 +420,6 @@ describe('authorization-selector', () => {
       const element = await customFixture(0);
       const result = element.validate();
       assert.isFalse(result);
-    });
-  });
-
-  describe('authorize()', () => {
-    it('returns null when no selection', async () => {
-      const element = await customFixture();
-      const result = element.authorize();
-      assert.strictEqual(result, null);
-    });
-
-    it('returns null when no authorize function on selected item', async () => {
-      const element = await customFixture(6);
-      const result = element.authorize();
-      assert.strictEqual(result, null);
-    });
-
-    it('returns result of calling authorize function on selected item', async () => {
-      const element = await authorizeFixture(1);
-      const result = await element.authorize();
-      assert.equal(result, null); // result of calling authorize() on invalid oauth 2
-    });
-  });
-
-  describe('restore()', () => {
-    it('ignores when no selection', async () => {
-      const element = await customFixture();
-      element.restore({});
-    });
-
-    it('ignores when no authorize function on selected item', async () => {
-      const element = await customFixture(1);
-      element.restore({});
-    });
-
-    it('restores values on selected item', async () => {
-      const element = await customFixture(0);
-      element.restore({
-        username: 'test-u',
-        password: 'test-p'
-      });
-      const result = element.serialize();
-      assert.deepEqual(result, {
-        username: 'test-u',
-        password: 'test-p'
-      });
     });
   });
 

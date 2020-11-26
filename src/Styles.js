@@ -1,7 +1,9 @@
 import { css } from 'lit-element';
+
 export default css`
 :host {
   display: block;
+  --anypoint-item-icon-width: 56px;
 }
 
 ::slotted([hidden]) {
